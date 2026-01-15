@@ -1,25 +1,28 @@
-import { reactive } from 'vue'
+import { reactive, computed } from 'vue'
 import type { Workbook, Worksheet } from 'exceljs'
 
+interface Section {
+  title?: string // Titre de la section (optionnel)
+  startRow: number // Ligne où commence la section (0-based)
+  headerRow: number // Ligne des en-têtes
+  dataStartRow: number // Première ligne de données
+  dataEndRow: number // Dernière ligne de données
+}
+
+interface ExcelConfig {
+  docTitleRow: number // Ligne du titre du document (défaut: 0)
+  sections: Section[] // Sections détectées
+  autoDetect: boolean // Détection auto activée
+}
+
 interface ExcelStore {
-  // Le workbook complet ExcelJS - contient tout le fichier Excel
   workbook: Workbook | null
-
-  // Nom du fichier uploadé (ex: "budget.xlsx")
   fileName: string
-
-  // Liste des noms des feuilles (ex: ["Budget", "Dépenses", "Récap"])
   sheetNames: string[]
-
-  // La feuille actuellement sélectionnée par l'utilisateur
   currentSheet: Worksheet | null
-
-  // Nom de la feuille active
   currentSheetName: string
-
-  // Données brutes de la feuille active sous forme de tableau 2D
-  // Exemple: [['Nom', 'Age'], ['Alice', 25], ['Bob', 30]]
   rawData: any[][]
+  config: ExcelConfig
 }
 
 export const excelStore = reactive<ExcelStore>({
@@ -29,27 +32,42 @@ export const excelStore = reactive<ExcelStore>({
   currentSheet: null,
   currentSheetName: '',
   rawData: [],
+  config: {
+    docTitleRow: 0,
+    sections: [],
+    autoDetect: true,
+  },
 })
 
-/**
- * Initialise le store avec un workbook chargé
- */
+// Computed : titre du document
+export const docTitle = computed(() => {
+  if (excelStore.rawData.length === 0) return ''
+  const titleRow = excelStore.rawData[excelStore.config.docTitleRow]
+  return titleRow?.[0] || 'Sans titre'
+})
+
+// Computed : en-têtes selon la config
+export const headers = computed(() => {
+  if (excelStore.rawData.length === 0) return []
+  return excelStore.rawData[0] || []
+})
+
+// Computed : lignes de données (après l'en-tête)
+export const dataRows = computed(() => {
+  if (excelStore.rawData.length === 0) return []
+  return excelStore.rawData.slice(1)
+})
+
 export function setWorkbook(wb: Workbook, name: string) {
   excelStore.workbook = wb
   excelStore.fileName = name
-
-  // ExcelJS : récupérer les noms de toutes les feuilles
   excelStore.sheetNames = wb.worksheets.map((ws) => ws.name)
 
-  // Par défaut, sélectionner la première feuille
   if (wb.worksheets.length > 0) {
     setCurrentSheet(wb.worksheets[0].name)
   }
 }
 
-/**
- * Change la feuille active et extrait ses données
- */
 export function setCurrentSheet(sheetName: string) {
   if (!excelStore.workbook) return
 
@@ -58,40 +76,35 @@ export function setCurrentSheet(sheetName: string) {
 
   excelStore.currentSheet = worksheet
   excelStore.currentSheetName = sheetName
-
-  // Extraire les données brutes dans un tableau 2D
   excelStore.rawData = extractRawData(worksheet)
+
+  // Reset et détection auto
+  excelStore.config = {
+    docTitleRow: 0,
+    sections: [],
+    autoDetect: true,
+  }
+
+  if (excelStore.config.autoDetect) {
+    detectSections()
+  }
 }
 
-/**
- * Extrait les données d'une feuille en tableau 2D
- * Gère les cellules vides, formules, et types de données
- */
 function extractRawData(worksheet: Worksheet): any[][] {
   const data: any[][] = []
 
-  // ExcelJS : eachRow itère sur chaque ligne
-  worksheet.eachRow((row, rowNumber) => {
+  worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
     const rowData: any[] = []
 
-    // Pour chaque cellule de la ligne
     row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-      // Récupérer la valeur de la cellule
-      // Si c'est une formule, on prend le résultat calculé
       let value = cell.value
 
-      // Gérer les types spéciaux ExcelJS
       if (value && typeof value === 'object') {
-        // Formule : prendre le résultat
         if ('result' in value) {
           value = value.result
-        }
-        // Texte riche : prendre le texte simple
-        else if ('richText' in value) {
+        } else if ('richText' in value) {
           value = value.richText.map((t: any) => t.text).join('')
-        }
-        // Hyperlien : prendre le texte
-        else if ('text' in value) {
+        } else if ('text' in value) {
           value = value.text
         }
       }
@@ -106,28 +119,115 @@ function extractRawData(worksheet: Worksheet): any[][] {
 }
 
 /**
- * Récupère les données d'une plage de cellules spécifique
- * Exemple: getCellRange('A1', 'C10')
+ * Vérifie si une ligne est vide
  */
-export function getCellRange(startCell: string, endCell: string): any[][] {
-  if (!excelStore.currentSheet) return []
-
-  const range =
-    excelStore.currentSheet.getCell(startCell).address +
-    ':' +
-    excelStore.currentSheet.getCell(endCell).address
-
-  const data: any[][] = []
-  // Note: ExcelJS n'a pas de méthode directe pour ça,
-  // on devrait parser les addresses et itérer
-  // C'est un exemple de fonction à compléter si besoin
-
-  return data
+function isEmptyRow(row: any[]): boolean {
+  return row.every((cell) => cell === null || cell === undefined || cell === '')
 }
 
 /**
- * Réinitialise le store
+ * Compte le nombre de cellules remplies dans une ligne
  */
+function countFilledCells(row: any[]): number {
+  return row.filter((cell) => cell !== null && cell !== undefined && cell !== '').length
+}
+
+/**
+ * Détecte automatiquement les sections selon les conventions
+ */
+export function detectSections() {
+  const data = excelStore.rawData
+  console.log(data)
+  if (data.length < 3) return // Minimum: titre + vide + section
+
+  const sections: Section[] = []
+  let i = excelStore.config.docTitleRow + 1 // Commencer après le titre
+
+  // Chercher la première ligne vide après le titre
+  while (i < data.length && !isEmptyRow(data[i])) {
+    i++
+  }
+  i++ // Passer la ligne vide
+
+  // Parcourir le reste pour détecter les sections
+  while (i < data.length) {
+    // Sauter les lignes vides
+    if (isEmptyRow(data[i])) {
+      i++
+      continue
+    }
+
+    const sectionStartRow = i
+    let title: string | undefined
+    let headerRow: number
+
+    // Vérifier si c'est un titre de section (1 seule cellule remplie)
+    const filledCells = countFilledCells(data[i])
+
+    if (filledCells === 1) {
+      // C'est un titre de section
+      title = String(data[i].find((cell) => cell !== null && cell !== undefined && cell !== ''))
+      i++
+
+      // La ligne suivante doit être l'en-tête
+      if (i >= data.length || isEmptyRow(data[i])) {
+        break // Section invalide
+      }
+      headerRow = i
+    } else {
+      // Pas de titre, cette ligne est directement l'en-tête
+      headerRow = i
+    }
+
+    i++ // Passer aux données
+    const dataStartRow = i
+
+    // Trouver la fin de la section (ligne vide ou fin du fichier)
+    while (i < data.length && !isEmptyRow(data[i])) {
+      i++
+    }
+
+    const dataEndRow = i - 1
+
+    // Ajouter la section si elle a au moins une ligne de données
+    if (dataEndRow >= dataStartRow) {
+      sections.push({
+        title,
+        startRow: sectionStartRow,
+        headerRow,
+        dataStartRow,
+        dataEndRow,
+      })
+    }
+  }
+
+  excelStore.config.sections = sections
+
+  console.log('📊 Sections détectées:', sections)
+}
+
+/**
+ * Active/désactive la détection automatique
+ */
+export function setAutoDetect(enabled: boolean) {
+  excelStore.config.autoDetect = enabled
+  if (enabled) {
+    detectSections()
+  }
+}
+
+/**
+ * Change la ligne du titre du document
+ */
+export function setDocTitleRow(row: number) {
+  if (row >= 0 && row < excelStore.rawData.length) {
+    excelStore.config.docTitleRow = row
+    if (excelStore.config.autoDetect) {
+      detectSections()
+    }
+  }
+}
+
 export function clearWorkbook() {
   excelStore.workbook = null
   excelStore.fileName = ''
@@ -135,11 +235,13 @@ export function clearWorkbook() {
   excelStore.currentSheet = null
   excelStore.currentSheetName = ''
   excelStore.rawData = []
+  excelStore.config = {
+    docTitleRow: 0,
+    sections: [],
+    autoDetect: true,
+  }
 }
 
-/**
- * Récupère des infos sur la feuille active
- */
 export function getCurrentSheetInfo() {
   if (!excelStore.currentSheet) return null
 

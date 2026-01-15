@@ -3,23 +3,37 @@ import { computed } from 'vue'
 import { excelStore } from '@/stores/excelStore'
 import ExcelImporter from './ExcelImporter.vue'
 import SheetViewer from './SheetViewer.vue'
+import ConfigPanel from './ConfigPanel.vue'
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 py-8 px-4">
-    <div class="max-w-7xl mx-auto space-y-8">
-      <!-- Titre de l'app -->
-      <div class="text-center">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Excel Sublimé</h1>
-        <p class="text-gray-600">Transformez vos tableaux Excel en interface moderne</p>
+  <div class="min-h-screen bg-gray-50">
+    <div class="h-screen flex flex-col">
+      <!-- Header -->
+      <div class="bg-white border-b px-6 py-4">
+        <h1 class="text-2xl font-bold text-gray-900">Excel Sublimé</h1>
+        <p class="text-sm text-gray-600 mt-1">
+          Transformez vos tableaux Excel en interface moderne
+        </p>
       </div>
 
-      <!-- Importer -->
-      <ExcelImporter />
+      <!-- Main content -->
+      <div class="flex-1 flex overflow-hidden">
+        <!-- Left: Content area -->
+        <div class="flex-1 overflow-auto">
+          <div class="p-6 space-y-6">
+            <!-- Importer si pas de fichier -->
+            <ExcelImporter v-if="!excelStore.workbook" />
 
-      <!-- Visualiser les données -->
-      <div v-if="excelStore.workbook" class="bg-white rounded-lg shadow p-6">
-        <SheetViewer />
+            <!-- Visualiser si fichier chargé -->
+            <div v-else class="bg-white rounded-lg shadow p-6">
+              <SheetViewer />
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Config Panel -->
+        <ConfigPanel v-if="excelStore.workbook" />
       </div>
     </div>
   </div>

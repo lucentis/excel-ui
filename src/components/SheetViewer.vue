@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { excelStore, setCurrentSheet } from '@/stores/excelStore'
+import { excelStore, setCurrentSheet, docTitle, headers, dataRows } from '@/stores/excelStore'
 import {
   Table,
   TableBody,
@@ -16,14 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Sheet } from 'lucide-vue-next'
+import { Sheet, FileText } from 'lucide-vue-next'
+import { Badge } from '@/components/ui/badge'
 
-// Données à afficher
 const hasData = computed(() => excelStore.rawData.length > 0)
-const headers = computed(() => excelStore.rawData[0] || [])
-const rows = computed(() => excelStore.rawData.slice(1))
 
-// Formater les valeurs pour l'affichage
 function formatCellValue(value: any): string {
   if (value === null || value === undefined) return ''
   if (typeof value === 'number') return value.toLocaleString('fr-FR')
@@ -32,23 +29,36 @@ function formatCellValue(value: any): string {
   return String(value)
 }
 
-// Changer de feuille
+// Numéro de ligne réel (en tenant compte de l'offset)
+function getRealRowNumber(dataRowIndex: number): number {
+  return 2 + dataRowIndex
+}
+
 function handleSheetChange(sheetName: string) {
   setCurrentSheet(sheetName)
 }
 </script>
 
 <template>
-  <div class="w-full space-y-4">
-    <!-- En-tête avec sélecteur de feuille -->
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <Sheet class="w-5 h-5 text-gray-600" />
-        <h2 class="text-xl font-semibold">{{ excelStore.currentSheetName }}</h2>
-        <span class="text-sm text-gray-500"> ({{ excelStore.rawData.length }} lignes) </span>
+  <div class="w-full space-y-6">
+    <!-- En-tête document -->
+    <div class="flex items-center justify-between pb-4 border-b">
+      <div class="flex items-center gap-3">
+        <FileText class="w-6 h-6 text-blue-600" />
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900">{{ docTitle }}</h2>
+          <div class="flex items-center gap-2 mt-1">
+            <Badge variant="secondary" class="text-xs">
+              {{ excelStore.currentSheetName }}
+            </Badge>
+            <span class="text-sm text-gray-500">
+              {{ excelStore.config.sections.length }} section(s)
+            </span>
+          </div>
+        </div>
       </div>
 
-      <!-- Sélecteur de feuille si plusieurs -->
+      <!-- Sélecteur de feuille -->
       <Select
         v-if="excelStore.sheetNames.length > 1"
         :model-value="excelStore.currentSheetName"
@@ -63,7 +73,10 @@ function handleSheetChange(sheetName: string) {
             :key="sheetName"
             :value="sheetName"
           >
-            {{ sheetName }}
+            <div class="flex items-center gap-2">
+              <Sheet class="w-4 h-4" />
+              {{ sheetName }}
+            </div>
           </SelectItem>
         </SelectContent>
       </Select>
@@ -72,32 +85,101 @@ function handleSheetChange(sheetName: string) {
     <!-- Message si pas de données -->
     <div v-if="!hasData" class="text-center py-12 text-gray-500">Aucune donnée à afficher</div>
 
-    <!-- Tableau des données -->
-    <div v-else class="border rounded-lg overflow-auto max-h-[600px]">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <!-- Colonne index -->
-            <TableHead class="w-12 bg-gray-50 sticky left-0 z-10">#</TableHead>
-            <!-- En-têtes des colonnes -->
-            <TableHead v-for="(header, index) in headers" :key="index" class="min-w-[150px]">
-              {{ formatCellValue(header) || `Colonne ${index + 1}` }}
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow v-for="(row, rowIndex) in rows" :key="rowIndex">
-            <!-- Numéro de ligne -->
-            <TableCell class="bg-gray-50 font-medium sticky left-0 z-10">
-              {{ rowIndex + 2 }}
-            </TableCell>
-            <!-- Cellules -->
-            <TableCell v-for="(cell, cellIndex) in row" :key="cellIndex">
-              {{ formatCellValue(cell) }}
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+    <!-- Affichage des sections -->
+    <div v-else class="space-y-8">
+      <!-- Section par section -->
+      <div
+        v-for="(section, sectionIndex) in excelStore.config.sections"
+        :key="sectionIndex"
+        class="space-y-3"
+      >
+        <!-- Titre de la section -->
+        <div v-if="section.title" class="flex items-center gap-2">
+          <div class="h-1 w-8 bg-blue-600 rounded"></div>
+          <h3 class="text-xl font-semibold text-gray-900">
+            {{ section.title }}
+          </h3>
+        </div>
+
+        <!-- Tableau de la section -->
+        <div class="border rounded-lg overflow-hidden">
+          <div class="overflow-auto max-h-[400px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead class="w-12 bg-gray-50 sticky left-0 z-10">#</TableHead>
+                  <TableHead
+                    v-for="(header, index) in excelStore.rawData[section.headerRow]"
+                    :key="index"
+                    class="min-w-[150px]"
+                  >
+                    {{ formatCellValue(header) || `Col ${index + 1}` }}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow
+                  v-for="rowIndex in Array.from(
+                    { length: section.dataEndRow - section.dataStartRow + 1 },
+                    (_, i) => section.dataStartRow + i,
+                  )"
+                  :key="rowIndex"
+                >
+                  <TableCell class="bg-gray-50 font-medium sticky left-0 z-10">
+                    {{ rowIndex + 1 }}
+                  </TableCell>
+                  <TableCell
+                    v-for="(cell, cellIndex) in excelStore.rawData[rowIndex]"
+                    :key="cellIndex"
+                  >
+                    {{ formatCellValue(cell) }}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message si aucune section mais données existent -->
+      <!-- <!-- <div
+        v-if="excelStore.config.sections.length === 0"
+        class="no-section p-6 border border-dashed rounded-lg text-center text-gray-500"
+      >
+        <div class="border rounded-lg overflow-hidden">
+          <div class="overflow-auto max-h-[600px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead class="w-12 bg-gray-50 sticky left-0 z-10">#</TableHead>
+                  <TableHead
+                    v-for="(header, index) in headers"
+                    :key="index"
+                    class="min-w-[150px] relative"
+                  >
+                    <div class="flex items-center gap-2">
+                      <span>{{ formatCellValue(header) || `Colonne ${index + 1}` }}</span>
+                      <Badge v-if="index === 0" variant="secondary" class="text-xs">
+                        📌 EN-TÊTE
+                      </Badge>
+                    </div>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow v-for="(row, rowIndex) in dataRows" :key="rowIndex">
+                  <TableCell class="bg-gray-50 font-medium sticky left-0 z-10">
+                    {{ getRealRowNumber(rowIndex) }}
+                  </TableCell>
+                  <TableCell v-for="(cell, cellIndex) in row" :key="cellIndex">
+                    {{ formatCellValue(cell) }}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </div> -->
     </div>
   </div>
 </template>
