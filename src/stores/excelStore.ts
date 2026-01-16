@@ -26,7 +26,7 @@ export function setWorkbook(wb: Workbook, name: string) {
   excelStore.sheetNames = wb.worksheets.map((ws) => ws.name)
 
   if (wb.worksheets.length > 0) {
-    setCurrentSheet(wb.worksheets[0].name)
+    wb.worksheets[0]?.name && setCurrentSheet(wb.worksheets[0].name)
   }
 }
 
