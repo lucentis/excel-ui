@@ -9,7 +9,7 @@ import ConfigPanel from './ConfigPanel.vue'
   <div class="min-h-screen bg-gray-50">
     <div class="h-screen flex flex-col">
       <!-- Header -->
-      <div class="bg-white border-b px-6 py-4">
+      <div class="bg-white border-b px-6 py-2">
         <h1 class="text-2xl font-bold text-gray-900">Excel Sublimé</h1>
         <p class="text-sm text-gray-600 mt-1">
           Transformez vos tableaux Excel en interface moderne
@@ -17,15 +17,15 @@ import ConfigPanel from './ConfigPanel.vue'
       </div>
 
       <!-- Main content -->
-      <div class="flex-1 flex overflow-hidden">
+      <div class="flex-1 flex">
         <!-- Left: Content area -->
         <div class="flex-1 overflow-auto">
-          <div class="p-6 space-y-6">
+          <div class="p-4 space-y-6">
             <!-- Importer si pas de fichier -->
             <ExcelImporter v-if="!excelStore.workbook" />
 
             <!-- Visualiser si fichier chargé -->
-            <div v-else class="bg-white rounded-lg shadow p-6">
+            <div v-else class="bg-white rounded-lg shadow p-4">
               <SheetViewer />
             </div>
           </div>

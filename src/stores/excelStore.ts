@@ -20,6 +20,10 @@ export const dataRows = computed(() => {
   return excelStore.currentSheet.rawData.slice(1)
 })
 
+function filledCellCount(row: unknown[] | undefined) {
+  return row?.filter((c) => c !== null && c !== undefined && c !== '').length
+}
+
 export function setWorkbook(wb: Workbook, name: string) {
   excelStore.workbook = wb
   excelStore.fileName = name
@@ -54,6 +58,8 @@ function extractRawData(worksheet: Worksheet): any[][] {
 
     row.eachCell({ includeEmpty: true }, (cell) => {
       let value = cell.value
+
+      console.log(cell)
 
       if (value && typeof value === 'object') {
         if ('result' in value) {
@@ -107,8 +113,8 @@ function parseSection(section: unknown[][]): Section {
     data: [],
   }
 
-  if (section[0]?.length === 1) {
-    builtSection.title = String(section[0][0])
+  if (filledCellCount(section[0]) === 1) {
+    builtSection.title = String(section[0]?.[0])
     builtSection.header = section[1] as string[]
     builtSection.data = section.slice(2)
   } else {
