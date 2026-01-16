@@ -143,9 +143,9 @@ export function getCurrentSheetInfo() {
 
   return {
     name: excelStore.currentSheet.name,
-    rowCount: excelStore.currentSheet.rowCount,
-    columnCount: excelStore.currentSheet.columnCount,
-    actualRowCount: excelStore.currentSheet.actualRowCount,
-    actualColumnCount: excelStore.currentSheet.actualColumnCount,
+    // rowCount: excelStore.currentSheet.rowCount,
+    // columnCount: excelStore.currentSheet.columnCount,
+    // actualRowCount: excelStore.currentSheet.actualRowCount,
+    // actualColumnCount: excelStore.currentSheet.actualColumnCount,
   }
 }
