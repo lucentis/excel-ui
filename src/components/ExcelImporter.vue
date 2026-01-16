@@ -53,9 +53,9 @@ async function readExcelFile(file: File) {
       fileName: file.name,
       sheets: excelStore.sheetNames,
       sheetCount: excelStore.sheetNames.length,
-      currentSheet: excelStore.currentSheetName,
+      currentSheet: excelStore.currentSheet.name,
       sheetInfo: getCurrentSheetInfo(),
-      rawDataPreview: excelStore.rawData.slice(0, 5), // 5 premières lignes
+      rawDataPreview: excelStore.currentSheet.rawData.slice(0, 5), // 5 premières lignes
     })
   } catch (err) {
     error.value = 'Erreur lors de la lecture du fichier'
@@ -105,10 +105,10 @@ function triggerFileInput() {
         <strong>Feuilles :</strong> {{ excelStore.sheetNames.join(', ') }}
       </p>
       <p class="text-sm text-green-700">
-        <strong>Feuille active :</strong> {{ excelStore.currentSheetName }}
+        <strong>Feuille active :</strong> {{ excelStore.currentSheet.name }}
       </p>
       <p class="text-sm text-green-700">
-        <strong>Lignes :</strong> {{ excelStore.rawData.length }}
+        <strong>Lignes :</strong> {{ excelStore.currentSheet.rawData.length }}
       </p>
     </div>
   </div>

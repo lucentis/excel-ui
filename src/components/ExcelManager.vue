@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { excelStore } from '@/stores/excelStore'
 import ExcelImporter from './ExcelImporter.vue'
 import SheetViewer from './SheetViewer.vue'
