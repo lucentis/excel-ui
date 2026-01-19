@@ -45,7 +45,7 @@ function handleHeaderClick(sectionIndex: number, colIndex: number) {
   if (excelStore.currentSheet.sections[sectionIndex]?.data.length) {
     return
   }
-  setCardRecap(sectionIndex, 0, colIndex, true)
+  setCardRecap(sectionIndex, 0, colIndex)
 }
 
 function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number): boolean {
