@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { excelStore, setCurrentSheet } from '@/stores/excelStore'
+import { excelStore, setCardRecap, setCurrentSheet } from '@/stores/excelStore'
 import {
   Table,
   TableBody,
@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select'
 import { Sheet, FileText } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
+import RecapCards from './RecapCards.vue'
 
 const hasData = computed(() => excelStore.currentSheet.rawData.length > 0)
 const hasSections = computed(() => excelStore.currentSheet.sections.length > 0)
@@ -32,6 +33,16 @@ function formatCellValue(value: unknown): string {
 
 function handleSheetChange(sheetName: string) {
   setCurrentSheet(sheetName)
+}
+
+function handleCellClick(sectionIndex: number, rowIndex: number, colIndex: number) {
+  if (!excelStore.selectionMode) return
+  setCardRecap(sectionIndex, rowIndex, colIndex)
+}
+
+function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number): boolean {
+  const section = excelStore.currentSheet.sections[sectionIndex]
+  return section?.cardRecap?.rowIndex === rowIndex && section?.cardRecap?.colIndex === colIndex
 }
 </script>
 
@@ -58,7 +69,7 @@ function handleSheetChange(sheetName: string) {
       <Select
         v-if="excelStore.sheetNames.length > 1"
         :model-value="excelStore.currentSheet.name"
-        @update:model-value="(value) => handleSheetChange(value as string)"
+        @update:model-value="handleSheetChange"
       >
         <SelectTrigger class="w-[200px]">
           <SelectValue placeholder="Choisir une feuille" />
@@ -81,49 +92,74 @@ function handleSheetChange(sheetName: string) {
     <!-- Message si pas de données -->
     <div v-if="!hasData" class="text-center py-12 text-gray-500">Aucune donnée à afficher</div>
 
-    <!-- Affichage des sections -->
-    <div v-else-if="hasSections" class="space-y-8">
-      <!-- Section par section -->
-      <div
-        v-for="(section, sectionIndex) in excelStore.currentSheet.sections"
-        :key="sectionIndex"
-        class="space-y-3"
-      >
-        <!-- Titre de la section -->
-        <div v-if="section.title" class="flex items-center gap-2">
-          <div class="h-1 w-8 bg-blue-600 rounded"></div>
-          <h3 class="text-xl font-semibold text-gray-900">
-            {{ section.title }}
-          </h3>
-        </div>
+    <!-- Affichage avec sections -->
+    <div v-else-if="hasSections">
+      <!-- Cards Recap -->
+      <RecapCards />
 
-        <!-- Tableau de la section -->
-        <div class="border rounded-lg overflow-hidden">
-          <div class="overflow-auto max-h-[400px]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead class="w-12 bg-gray-50 sticky left-0 z-10">#</TableHead>
-                  <TableHead
-                    v-for="(header, index) in section.header"
-                    :key="index"
-                    class="min-w-[150px]"
-                  >
-                    {{ formatCellValue(header) || `Col ${index + 1}` }}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow v-for="(row, rowIndex) in section.data" :key="rowIndex">
-                  <TableCell class="bg-gray-50 font-medium sticky left-0 z-10">
-                    {{ rowIndex + 1 }}
-                  </TableCell>
-                  <TableCell v-for="(cell, cellIndex) in row" :key="cellIndex">
-                    {{ formatCellValue(cell) }}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+      <!-- Sections -->
+      <div class="space-y-8">
+        <!-- Section par section -->
+        <div
+          v-for="(section, sectionIndex) in excelStore.currentSheet.sections"
+          :key="sectionIndex"
+          class="space-y-3"
+        >
+          <!-- Titre de la section -->
+          <div v-if="section.title" class="flex items-center gap-2">
+            <div class="h-1 w-8 bg-blue-600 rounded"></div>
+            <h3 class="text-xl font-semibold text-gray-900">
+              {{ section.title }}
+            </h3>
+          </div>
+
+          <!-- Tableau de la section -->
+          <div class="border rounded-lg overflow-hidden">
+            <div class="overflow-auto max-h-[400px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead class="w-12 bg-gray-50 sticky left-0 z-10">#</TableHead>
+                    <TableHead
+                      v-for="(header, index) in section.header"
+                      :key="index"
+                      class="min-w-[150px]"
+                    >
+                      {{ formatCellValue(header) || `Col ${index + 1}` }}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow v-for="(row, rowIndex) in section.data" :key="rowIndex">
+                    <TableCell class="bg-gray-50 font-medium sticky left-0 z-10">
+                      {{ rowIndex + 1 }}
+                    </TableCell>
+                    <TableCell
+                      v-for="(cell, cellIndex) in row"
+                      :key="cellIndex"
+                      :class="[
+                        excelStore.selectionMode ? 'cursor-pointer hover:bg-blue-50' : '',
+                        isCellSelected(sectionIndex, rowIndex, cellIndex)
+                          ? 'bg-blue-100 ring-2 ring-blue-500'
+                          : '',
+                      ]"
+                      @click="handleCellClick(sectionIndex, rowIndex, cellIndex)"
+                    >
+                      <div class="flex items-center gap-2">
+                        {{ formatCellValue(cell) }}
+                        <Badge
+                          v-if="isCellSelected(sectionIndex, rowIndex, cellIndex)"
+                          variant="default"
+                          class="text-xs"
+                        >
+                          ⭐
+                        </Badge>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </div>
       </div>

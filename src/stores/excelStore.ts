@@ -13,6 +13,7 @@ export const excelStore = reactive<ExcelStore>({
     title: '',
     sections: [],
   },
+  selectionMode: false,
 })
 
 export const dataRows = computed(() => {
@@ -50,16 +51,14 @@ export function setCurrentSheet(sheetName: string) {
   detectSections()
 }
 
-function extractRawData(worksheet: Worksheet): any[][] {
-  const data: any[][] = []
+function extractRawData(worksheet: Worksheet): unknown[][] {
+  const data: unknown[][] = []
 
   worksheet.eachRow({ includeEmpty: true }, (row) => {
-    const rowData: any[] = []
+    const rowData: unknown[] = []
 
     row.eachCell({ includeEmpty: true }, (cell) => {
       let value = cell.value
-
-      console.log(cell)
 
       if (value && typeof value === 'object') {
         if ('result' in value) {
@@ -80,7 +79,7 @@ function extractRawData(worksheet: Worksheet): any[][] {
   return data
 }
 
-function isEmptyRow(row: any[]): boolean {
+function isEmptyRow(row: unknown[]): boolean {
   return row.every((cell) => cell === null || cell === undefined || cell === '')
 }
 
@@ -88,7 +87,7 @@ export function detectSections() {
   const sections: Section[] = []
   let currentSection: unknown[][] = []
 
-  excelStore.currentSheet.rawData.slice(1).forEach(function (row, index) {
+  excelStore.currentSheet.rawData.slice(1).forEach(function (row) {
     if (!isEmptyRow(row)) {
       currentSection.push(row)
     } else {
@@ -125,6 +124,35 @@ function parseSection(section: unknown[][]): Section {
   return builtSection
 }
 
+/**
+ * Active/désactive le mode sélection de cellule
+ */
+export function setSelectionMode(enabled: boolean) {
+  console.log(enabled)
+
+  excelStore.selectionMode = enabled
+}
+
+/**
+ * Définit la cellule récap pour une section
+ */
+export function setCardRecap(sectionIndex: number, rowIndex: number, colIndex: number) {
+  const section = excelStore.currentSheet.sections[sectionIndex]
+  if (!section) return
+
+  const value = section.data[rowIndex]?.[colIndex]
+  const label = section.header[colIndex]
+
+  section.cardRecap = {
+    rowIndex,
+    colIndex,
+    value,
+    label,
+  }
+
+  console.log(`📌 Card recap définie pour section ${sectionIndex}:`, section.cardRecap)
+}
+
 export function clearWorkbook() {
   excelStore.workbook = null
   excelStore.fileName = ''
@@ -136,6 +164,7 @@ export function clearWorkbook() {
     title: '',
     sections: [],
   }
+  excelStore.selectionMode = false
 }
 
 export function getCurrentSheetInfo() {
@@ -143,9 +172,5 @@ export function getCurrentSheetInfo() {
 
   return {
     name: excelStore.currentSheet.name,
-    // rowCount: excelStore.currentSheet.rowCount,
-    // columnCount: excelStore.currentSheet.columnCount,
-    // actualRowCount: excelStore.currentSheet.actualRowCount,
-    // actualColumnCount: excelStore.currentSheet.actualColumnCount,
   }
 }

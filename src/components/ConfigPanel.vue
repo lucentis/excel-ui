@@ -1,12 +1,23 @@
 <script setup lang="ts">
-import { excelStore } from '@/stores/excelStore'
-import { Settings2, ChevronRight, Layers, CheckCircle2 } from 'lucide-vue-next'
+import { excelStore, setSelectionMode } from '@/stores/excelStore'
+import { Settings2, ChevronRight, Layers, CheckCircle2, MousePointerClick } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
 
 function formatCell(value: unknown): string {
   if (value === null || value === undefined || value === '') return '(vide)'
   return String(value).substring(0, 30)
+}
+
+function formatValue(value: unknown): string {
+  if (value === null || value === undefined) return '-'
+  if (typeof value === 'number') return value.toLocaleString('fr-FR')
+  return String(value)
+}
+
+function toggleSelectionMode(enabled: boolean) {
+  setSelectionMode(enabled)
 }
 </script>
 
@@ -33,6 +44,64 @@ function formatCell(value: unknown): string {
         <!-- Preview du titre -->
         <div class="p-2 bg-blue-50 rounded text-sm font-medium text-blue-900">
           {{ excelStore.currentSheet.title }}
+        </div>
+      </div>
+
+      <Separator />
+
+      <!-- Section Cards Recap -->
+      <div class="space-y-3">
+        <h4 class="font-medium text-sm flex items-center gap-2">
+          <MousePointerClick class="w-4 h-4" />
+          Cards Recap
+        </h4>
+
+        <p class="text-xs text-gray-600">
+          Sélectionnez une cellule importante par section pour les cartes récap
+        </p>
+
+        <!-- Toggle mode sélection -->
+        <div
+          class="flex items-center justify-between p-2 bg-blue-50 rounded border border-blue-200"
+        >
+          <div class="flex-1">
+            <div class="text-sm font-medium">Mode sélection</div>
+            <div class="text-xs text-gray-600">Cliquez sur une cellule dans le tableau</div>
+          </div>
+          <Switch
+            :model-value="excelStore.selectionMode"
+            @update:model-value="toggleSelectionMode"
+          />
+        </div>
+
+        <!-- Liste des cards configurées -->
+        <div
+          v-if="excelStore.currentSheet.sections.some((s) => s.cardRecap)"
+          class="space-y-2 mt-3"
+        >
+          <div
+            v-for="(section, index) in excelStore.currentSheet.sections"
+            :key="index"
+            class="p-2 border rounded bg-gray-50"
+          >
+            <div class="text-xs font-medium text-gray-700 mb-1">
+              {{ section.title || `Section ${index + 1}` }}
+            </div>
+            <div v-if="section.cardRecap" class="text-xs text-gray-600">
+              <div>
+                <strong>{{ section.cardRecap.label || 'Valeur' }} :</strong>
+                {{ formatValue(section.cardRecap.value) }}
+              </div>
+              <div class="text-gray-500">
+                Ligne {{ section.cardRecap.rowIndex + 1 }}, Col {{ section.cardRecap.colIndex + 1 }}
+              </div>
+            </div>
+            <div v-else class="text-xs text-gray-400 italic">Non configurée</div>
+          </div>
+        </div>
+
+        <div v-else class="text-xs text-gray-500 italic p-2 bg-gray-50 rounded">
+          Activez le mode sélection et cliquez sur des cellules
         </div>
       </div>
 

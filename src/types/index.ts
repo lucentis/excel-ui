@@ -4,6 +4,12 @@ export interface Section {
   title?: string
   header: string[]
   data: unknown[][]
+  cardRecap?: {
+    rowIndex: number
+    colIndex: number
+    value: unknown
+    label?: string
+  }
 }
 
 export interface ExcelStore {
@@ -17,4 +23,5 @@ export interface ExcelStore {
     title: string
     sections: Section[]
   }
+  selectionMode: boolean
 }
