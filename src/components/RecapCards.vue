@@ -60,14 +60,14 @@ function getCardColor(index: number) {
       :key="index"
       :class="[
         'p-4 rounded-lg border-2 transition-all hover:shadow-md flex justify-between',
-        getCardColor(index).bg,
-        getCardColor(index).border,
+        getCardColor(index)?.bg,
+        getCardColor(index)?.border,
       ]"
     >
       <div class="">
         <!-- Header -->
         <div class="flex items-center justify-between mb-3">
-          <div :class="['h-1 w-12 rounded', getCardColor(index).accent]"></div>
+          <div :class="['h-1 w-12 rounded', getCardColor(index)?.accent]"></div>
         </div>
 
         <!-- Title -->
@@ -83,7 +83,7 @@ function getCardColor(index: number) {
 
       <div class="">
         <!-- Value -->
-        <div :class="['text-3xl font-bold mb-1', getCardColor(index).text]">
+        <div :class="['text-3xl font-bold mb-1', getCardColor(index)?.text]">
           {{ formatValue(card.value) }}
         </div>
       </div>

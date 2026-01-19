@@ -77,7 +77,7 @@ function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number
       <Select
         v-if="excelStore.sheetNames.length > 1"
         :model-value="excelStore.currentSheet.name"
-        @update:model-value="handleSheetChange"
+        @update:model-value="(sheetName) => handleSheetChange(sheetName as string)"
       >
         <SelectTrigger class="w-[200px]">
           <SelectValue placeholder="Choisir une feuille" />
