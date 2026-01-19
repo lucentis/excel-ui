@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge'
 import RecapCards from './RecapCards.vue'
 
 const hasData = computed(() => excelStore.currentSheet.rawData.length > 0)
+
 const hasSections = computed(() => excelStore.currentSheet.sections.length > 0)
 
 function formatCellValue(value: unknown): string {
@@ -36,8 +37,15 @@ function handleSheetChange(sheetName: string) {
 }
 
 function handleCellClick(sectionIndex: number, rowIndex: number, colIndex: number) {
-  if (!excelStore.selectionMode) return
+  // if (!excelStore.selectionMode) return
   setCardRecap(sectionIndex, rowIndex, colIndex)
+}
+
+function handleHeaderClick(sectionIndex: number, colIndex: number) {
+  if (excelStore.currentSheet.sections[sectionIndex]?.data.length) {
+    return
+  }
+  setCardRecap(sectionIndex, 0, colIndex, true)
 }
 
 function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number): boolean {
@@ -124,6 +132,7 @@ function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number
                       v-for="(header, index) in section.header"
                       :key="index"
                       class="min-w-[150px]"
+                      @click="handleHeaderClick(sectionIndex, index)"
                     >
                       {{ formatCellValue(header) || `Col ${index + 1}` }}
                     </TableHead>
@@ -139,9 +148,7 @@ function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number
                       :key="cellIndex"
                       :class="[
                         excelStore.selectionMode ? 'cursor-pointer hover:bg-blue-50' : '',
-                        isCellSelected(sectionIndex, rowIndex, cellIndex)
-                          ? 'bg-blue-100 ring-2 ring-blue-500'
-                          : '',
+                        isCellSelected(sectionIndex, rowIndex, cellIndex) ? 'bg-blue-100' : '',
                       ]"
                       @click="handleCellClick(sectionIndex, rowIndex, cellIndex)"
                     >
@@ -149,8 +156,7 @@ function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number
                         {{ formatCellValue(cell) }}
                         <Badge
                           v-if="isCellSelected(sectionIndex, rowIndex, cellIndex)"
-                          variant="default"
-                          class="text-xs"
+                          class="text-xs bg-sky-100"
                         >
                           ⭐
                         </Badge>

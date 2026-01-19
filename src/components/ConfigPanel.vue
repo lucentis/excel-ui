@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { excelStore, setSelectionMode } from '@/stores/excelStore'
+import { excelStore } from '@/stores/excelStore'
 import { Settings2, ChevronRight, Layers, CheckCircle2, MousePointerClick } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Switch } from '@/components/ui/switch'
+// import { Switch } from '@/components/ui/switch'
 
 function formatCell(value: unknown): string {
   if (value === null || value === undefined || value === '') return '(vide)'
@@ -16,9 +16,9 @@ function formatValue(value: unknown): string {
   return String(value)
 }
 
-function toggleSelectionMode(enabled: boolean) {
-  setSelectionMode(enabled)
-}
+// function toggleSelectionMode(enabled: boolean) {
+//   setSelectionMode(enabled)
+// }
 </script>
 
 <template>
@@ -61,7 +61,7 @@ function toggleSelectionMode(enabled: boolean) {
         </p>
 
         <!-- Toggle mode sélection -->
-        <div
+        <!-- <div
           class="flex items-center justify-between p-2 bg-blue-50 rounded border border-blue-200"
         >
           <div class="flex-1">
@@ -72,7 +72,7 @@ function toggleSelectionMode(enabled: boolean) {
             :model-value="excelStore.selectionMode"
             @update:model-value="toggleSelectionMode"
           />
-        </div>
+        </div> -->
 
         <!-- Liste des cards configurées -->
         <div

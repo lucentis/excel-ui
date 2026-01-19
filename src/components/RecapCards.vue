@@ -7,9 +7,9 @@ const cardsData = computed(() => {
   return excelStore.currentSheet.sections
     .filter((section) => section.cardRecap)
     .map((section) => ({
-      title: section.title || 'Section',
-      label: section.cardRecap!.label || 'Valeur',
-      value: section.cardRecap!.value,
+      title: section.title || section.cardRecap?.label,
+      label: section.cardRecap?.label || 'Valeur',
+      value: section.cardRecap?.value,
     }))
 })
 
@@ -59,29 +59,33 @@ function getCardColor(index: number) {
       v-for="(card, index) in cardsData"
       :key="index"
       :class="[
-        'p-4 rounded-lg border-2 transition-all hover:shadow-md',
+        'p-4 rounded-lg border-2 transition-all hover:shadow-md flex justify-between',
         getCardColor(index).bg,
         getCardColor(index).border,
       ]"
     >
-      <!-- Header -->
-      <div class="flex items-center justify-between mb-3">
-        <div :class="['h-1 w-12 rounded', getCardColor(index).accent]"></div>
+      <div class="">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-3">
+          <div :class="['h-1 w-12 rounded', getCardColor(index).accent]"></div>
+        </div>
+
+        <!-- Title -->
+        <div class="text-sm font-medium text-gray-600 mb-1">
+          {{ card.title }}
+        </div>
+
+        <!-- Label -->
+        <div class="text-xs text-gray-500">
+          {{ card.label }}
+        </div>
       </div>
 
-      <!-- Title -->
-      <div class="text-sm font-medium text-gray-600 mb-1">
-        {{ card.title }}
-      </div>
-
-      <!-- Value -->
-      <div :class="['text-3xl font-bold mb-1', getCardColor(index).text]">
-        {{ formatValue(card.value) }}
-      </div>
-
-      <!-- Label -->
-      <div class="text-xs text-gray-500">
-        {{ card.label }}
+      <div class="">
+        <!-- Value -->
+        <div :class="['text-3xl font-bold mb-1', getCardColor(index).text]">
+          {{ formatValue(card.value) }}
+        </div>
       </div>
     </div>
   </div>

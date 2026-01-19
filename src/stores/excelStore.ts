@@ -46,8 +46,6 @@ export function setCurrentSheet(sheetName: string) {
   excelStore.currentSheet.rawData = extractRawData(worksheet)
   excelStore.currentSheet.title = excelStore.currentSheet.rawData[0]?.[0] as string
 
-  console.log(excelStore.currentSheet?.rawData)
-
   detectSections()
 }
 
@@ -127,21 +125,30 @@ function parseSection(section: unknown[][]): Section {
 /**
  * Active/désactive le mode sélection de cellule
  */
-export function setSelectionMode(enabled: boolean) {
-  console.log(enabled)
-
-  excelStore.selectionMode = enabled
-}
+// export function setSelectionMode(enabled: boolean) {
+//   excelStore.selectionMode = enabled
+// }
 
 /**
  * Définit la cellule récap pour une section
  */
-export function setCardRecap(sectionIndex: number, rowIndex: number, colIndex: number) {
+export function setCardRecap(
+  sectionIndex: number,
+  rowIndex: number,
+  colIndex: number,
+  header: boolean = false,
+) {
   const section = excelStore.currentSheet.sections[sectionIndex]
   if (!section) return
-
-  const value = section.data[rowIndex]?.[colIndex]
-  const label = section.header[colIndex]
+  let value
+  let label
+  if (header) {
+    value = section.header[colIndex]
+    label = section.header[0]
+  } else {
+    value = section.data[rowIndex]?.[colIndex]
+    label = section.header[colIndex]
+  }
 
   section.cardRecap = {
     rowIndex,
