@@ -132,9 +132,16 @@ function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number
                       v-for="(header, index) in section.header"
                       :key="index"
                       class="min-w-[150px]"
+                      :class="[isCellSelected(sectionIndex, 0, index) ? 'bg-blue-100' : '']"
                       @click="handleHeaderClick(sectionIndex, index)"
                     >
                       {{ formatCellValue(header) || `Col ${index + 1}` }}
+                      <Badge
+                        v-if="isCellSelected(sectionIndex, 0, index)"
+                        class="text-xs bg-sky-100"
+                      >
+                        ⭐
+                      </Badge>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -147,7 +154,7 @@ function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number
                       v-for="(cell, cellIndex) in row"
                       :key="cellIndex"
                       :class="[
-                        excelStore.selectionMode ? 'cursor-pointer hover:bg-blue-50' : '',
+                        'cursor-pointer hover:bg-blue-50',
                         isCellSelected(sectionIndex, rowIndex, cellIndex) ? 'bg-blue-100' : '',
                       ]"
                       @click="handleCellClick(sectionIndex, rowIndex, cellIndex)"

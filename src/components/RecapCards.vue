@@ -95,8 +95,6 @@ function getCardColor(index: number) {
     v-else
     class="mb-8 p-6 border-2 border-dashed border-gray-300 rounded-lg text-center text-gray-500"
   >
-    <p class="text-sm">
-      📌 Activez le mode sélection dans le panneau de configuration pour créer des cartes récap
-    </p>
+    <p class="text-sm">📌 Cliquer sur une cellule pour créer une carte récapitulatif</p>
   </div>
 </template>
