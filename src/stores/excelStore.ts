@@ -1,9 +1,11 @@
 import { reactive } from 'vue'
 import type { Workbook } from 'exceljs'
-import type { ExcelStore } from '@/types'
+import type { ExcelStore, ChartType } from '@/types'
 import { extractRawData } from '@/utils/excelParser'
 import { detectSections } from '@/utils/sectionDetector'
 import { createCardRecap } from '@/utils/cardManager'
+import { setSectionChart } from '@/utils/chartManager'
+// import { createChart, changeChartType } from '@/utils/chartManager'
 
 /**
  * Store réactif pour l'état de l'application Excel
@@ -110,3 +112,32 @@ export function getCurrentSheetInfo() {
     rowsCount: excelStore.currentSheet.rawData.length,
   }
 }
+
+/**
+ * Active un graphique pour une section
+ */
+export function toggleSectionChart(sectionIndex: number, columnIndex: number) {
+  const section = excelStore.currentSheet.sections[sectionIndex]
+  if (!section) return
+
+  // Si graphique existe déjà sur cette colonne, le supprimer
+  if (section.chart && section.chart.columnIndex === columnIndex) {
+    section.chart = undefined
+    console.log(`📊 Graphique supprimé pour section ${sectionIndex}`)
+  } else {
+    // Créer un nouveau graphique
+    section.chart = setSectionChart(section, columnIndex)
+    console.log(`📊 Graphique créé pour section ${sectionIndex}:`, section.chart)
+  }
+}
+
+// /**
+//  * Change le type de graphique d'une section
+//  */
+// export function setChartType(sectionIndex: number, type: ChartType) {
+//   const section = excelStore.currentSheet.sections[sectionIndex]
+//   if (!section?.chart) return
+
+//   section.chart = changeChartType(section.chart, type)
+//   console.log(`📊 Type de graphique changé pour section ${sectionIndex}:`, type)
+// }

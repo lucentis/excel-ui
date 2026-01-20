@@ -1,5 +1,13 @@
 import type { Workbook, Worksheet } from 'exceljs'
 
+export interface Section {
+  title?: string
+  header: string[]
+  data: unknown[][]
+  cardRecap?: CardRecap
+  chart?: Chart
+}
+
 export interface CardRecap {
   rowIndex: number
   colIndex: number
@@ -7,12 +15,13 @@ export interface CardRecap {
   label?: string
 }
 
-export interface Section {
-  title?: string
-  header: string[]
-  data: unknown[][]
-  cardRecap?: CardRecap
+export interface Chart {
+  columnIndex: number // Colonne pour les valeurs (Y)
+  labelColumnIndex: number // Colonne pour les labels (X)
+  type: ChartType
 }
+
+export type ChartType = 'bar' | 'pie' | 'line'
 
 export interface CurrentSheet {
   name: string

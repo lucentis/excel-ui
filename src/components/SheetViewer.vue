@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { excelStore, setCardRecap, setCurrentSheet } from '@/stores/excelStore'
+import { excelStore, setCardRecap, setCurrentSheet, toggleSectionChart } from '@/stores/excelStore'
 import {
   Table,
   TableBody,
@@ -16,9 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Sheet, FileText } from 'lucide-vue-next'
+import { Sheet, FileText, BarChart3 } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import RecapCards from './RecapCards.vue'
+import { isNumericColumn } from '@/utils/chartManager'
 
 const hasData = computed(() => excelStore.currentSheet.rawData.length > 0)
 
@@ -38,6 +39,7 @@ function handleSheetChange(sheetName: string) {
 
 function handleCellClick(sectionIndex: number, rowIndex: number, colIndex: number) {
   // if (!excelStore.selectionMode) return
+  console.log(sectionIndex, rowIndex, colIndex)
   setCardRecap(sectionIndex, rowIndex, colIndex)
 }
 
@@ -46,6 +48,10 @@ function handleHeaderClick(sectionIndex: number, colIndex: number) {
     return
   }
   setCardRecap(sectionIndex, 0, colIndex)
+}
+
+function handleChartIconClick(sectionIndex: number, colIndex: number) {
+  toggleSectionChart(sectionIndex, colIndex)
 }
 
 function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number): boolean {
@@ -132,16 +138,40 @@ function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number
                       v-for="(header, index) in section.header"
                       :key="index"
                       class="min-w-[150px]"
-                      :class="[isCellSelected(sectionIndex, 0, index) ? 'bg-blue-100' : '']"
+                      :class="[
+                        isCellSelected(sectionIndex, 0, index) && !section.data.length
+                          ? 'bg-blue-100'
+                          : '',
+                      ]"
                       @click="handleHeaderClick(sectionIndex, index)"
                     >
-                      {{ formatCellValue(header) || `Col ${index + 1}` }}
-                      <Badge
-                        v-if="isCellSelected(sectionIndex, 0, index)"
-                        class="text-xs bg-sky-100"
-                      >
-                        ⭐
-                      </Badge>
+                      <div class="flex items-center gap-4 group">
+                        {{ formatCellValue(header) || `Col ${index + 1}` }}
+
+                        <Badge
+                          v-if="isCellSelected(sectionIndex, 0, index) && !section.data.length"
+                          class="text-xs bg-sky-100"
+                        >
+                          ⭐
+                        </Badge>
+
+                        <!-- Icône graphique au hover -->
+                        <button
+                          v-if="isNumericColumn(section, index)"
+                          @click.stop="handleChartIconClick(sectionIndex, index)"
+                          :class="[
+                            'opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100 cursor-pointer',
+                            // isChartActive(sectionIndex, index) ? 'opacity-100 bg-blue-100' : '',
+                          ]"
+                        >
+                          <BarChart3
+                            :class="[
+                              'w-4 h-4',
+                              // isChartActive(sectionIndex, index) ? 'text-blue-600' : 'text-gray-500',
+                            ]"
+                          />
+                        </button>
+                      </div>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
