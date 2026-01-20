@@ -23,10 +23,6 @@ function formatValue(value: unknown): string {
   return String(value)
 }
 
-function isNumeric(value: unknown): boolean {
-  return typeof value === 'number'
-}
-
 // Couleurs par index pour varier
 const cardColors = [
   { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-900', accent: 'bg-blue-600' },

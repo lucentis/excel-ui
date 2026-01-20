@@ -8,7 +8,7 @@ export function createCardRecap(section: Section, rowIndex: number, colIndex: nu
   const value =
     section.data.length > 0 ? section.data[rowIndex]?.[colIndex] : section.header[colIndex]
 
-  const label = section.header[colIndex]
+  const label = section.data.length > 0 ? section.header[colIndex] : section.header[0]
 
   return {
     rowIndex,
