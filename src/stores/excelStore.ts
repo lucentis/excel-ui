@@ -131,13 +131,13 @@ export function toggleSectionChart(sectionIndex: number, columnIndex: number) {
   }
 }
 
-// /**
-//  * Change le type de graphique d'une section
-//  */
-// export function setChartType(sectionIndex: number, type: ChartType) {
-//   const section = excelStore.currentSheet.sections[sectionIndex]
-//   if (!section?.chart) return
+/**
+ * Change le type de graphique d'une section
+ */
+export function setChartType(sectionIndex: number, type: ChartType) {
+  const section = excelStore.currentSheet.sections[sectionIndex]
+  if (!section?.chart) return
 
-//   section.chart = changeChartType(section.chart, type)
-//   console.log(`📊 Type de graphique changé pour section ${sectionIndex}:`, type)
-// }
+  section.chart = changeChartType(section.chart, type)
+  console.log(`📊 Type de graphique changé pour section ${sectionIndex}:`, type)
+}

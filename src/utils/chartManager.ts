@@ -1,5 +1,5 @@
 import { excelStore } from '@/stores/excelStore'
-import type { Chart, Section } from '@/types'
+import type { Chart, ChartType, Section } from '@/types'
 
 export function isNumericColumn(section: Section, columnIndex: number): boolean {
   if (section.data.length === 0) return false
@@ -42,36 +42,41 @@ export function setSectionChart(section: Section, columnIndex: number): Chart {
   }
 }
 
-// /**
-//  * Change le type de graphique
-//  */
-// export function changeChartType(chart: Chart, newType: ChartType): Chart {
-//   return {
-//     ...chart,
-//     type: newType,
-//   }
-// }
+/**
+ * Change le type de graphique
+ */
+export function changeChartType(chart: Chart, newType: ChartType): Chart {
+  return {
+    ...chart,
+    type: newType,
+  }
+}
 
-// /**
-//  * Prépare les données pour Recharts
-//  */
-// export function prepareChartData(section: Section, chart: Chart) {
-//   return section.data.map((row) => ({
-//     name: String(row[chart.labelColumnIndex] || ''),
-//     value: Number(row[chart.columnIndex]) || 0,
-//   }))
-// }
+/**
+ * Prépare les données pour Recharts
+ */
+export function prepareChartData(section: Section, chart: Chart) {
+  const data = section.data.map((row, index) => ({
+    index,
+    name: String(row[chart.labelColumnIndex] || ''),
+    value: Number(row[chart.columnIndex]) || 0,
+  }))
 
-// /**
-//  * Obtient le label de la colonne de valeurs
-//  */
-// export function getChartValueLabel(section: Section, chart: Chart): string {
-//   return String(section.header[chart.columnIndex] || 'Valeur')
-// }
+  console.log(data)
 
-// /**
-//  * Obtient le label de la colonne de labels
-//  */
-// export function getChartLabelName(section: Section, chart: Chart): string {
-//   return String(section.header[chart.labelColumnIndex] || 'Label')
-// }
+  return data
+}
+
+/**
+ * Obtient le label de la colonne de valeurs
+ */
+export function getChartValueLabel(section: Section, chart: Chart): string {
+  return String(section.header[chart.columnIndex] || 'Valeur')
+}
+
+/**
+ * Obtient le label de la colonne de labels
+ */
+export function getChartLabelName(section: Section, chart: Chart): string {
+  return String(section.header[chart.labelColumnIndex] || 'Label')
+}

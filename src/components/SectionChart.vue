@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import type { Section } from '@/types'
 import type { ChartConfig } from '@/components/ui/chart'
 import { prepareChartData, getChartValueLabel } from '@/utils/chartManager'
-import { setChartType, toggleChart } from '@/stores/excelStore'
+import { setChartType, toggleSectionChart } from '@/stores/excelStore'
 import { BarChart3, PieChart, LineChart, Settings2, X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import {
@@ -41,7 +41,7 @@ const chartConfig = computed(
     ({
       value: {
         label: valueLabel.value,
-        color: 'hsl(var(--chart-1))',
+        color: '#bada55',
       },
     }) satisfies ChartConfig,
 )
@@ -54,7 +54,7 @@ function handleTypeChange(type: 'bar' | 'pie' | 'line') {
 
 function handleRemoveChart() {
   if (props.section.chart) {
-    toggleChart(props.sectionIndex, props.section.chart.columnIndex)
+    toggleSectionChart(props.sectionIndex, props.section.chart.columnIndex)
   }
 }
 </script>
@@ -117,6 +117,7 @@ function handleRemoveChart() {
           :x="(d: ChartDataType) => d.index"
           :tick-line="false"
           :domain-line="false"
+          :tick-values="chartData.map((d) => d.index)"
           :tick-format="(i: number) => chartData[i]?.name || ''"
         />
         <VisAxis type="y" :tick-line="false" :domain-line="false" :grid-line="true" />
@@ -124,7 +125,10 @@ function handleRemoveChart() {
         <ChartCrosshair
           :template="
             componentToString(chartConfig, ChartTooltipContent, {
-              labelFormatter: (i: number) => chartData[i]?.name || '',
+              labelFormatter: (d: number | Date) => {
+                const index = typeof d === 'number' ? d : d.getTime()
+                return chartData[index]?.name || ''
+              },
             })
           "
           :color="[chartConfig.value.color]"

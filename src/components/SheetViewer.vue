@@ -20,6 +20,7 @@ import { Sheet, FileText, BarChart3 } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import RecapCards from './RecapCards.vue'
 import { isNumericColumn } from '@/utils/chartManager'
+import SectionChart from './SectionChart.vue'
 
 const hasData = computed(() => excelStore.currentSheet.rawData.length > 0)
 
@@ -126,6 +127,8 @@ function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number
               {{ section.title }}
             </h3>
           </div>
+
+          <SectionChart :section="section" :section-index="sectionIndex" />
 
           <!-- Tableau de la section -->
           <div class="border rounded-lg overflow-hidden">
