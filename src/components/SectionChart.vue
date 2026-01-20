@@ -19,7 +19,14 @@ import {
   ChartTooltipContent,
   componentToString,
 } from '@/components/ui/chart'
-import { VisXYContainer, VisGroupedBar, VisLine, VisDonut, VisAxis } from '@unovis/vue'
+import {
+  VisXYContainer,
+  VisGroupedBar,
+  VisLine,
+  VisDonut,
+  VisAxis,
+  VisSingleContainer,
+} from '@unovis/vue'
 
 const props = defineProps<{
   section: Section
@@ -104,6 +111,7 @@ function handleRemoveChart() {
       v-if="section.chart.type === 'bar'"
       :config="chartConfig"
       class="h-[300px] w-full"
+      :key="'bar' + sectionIndex"
     >
       <VisXYContainer :data="chartData">
         <VisGroupedBar
@@ -141,8 +149,11 @@ function handleRemoveChart() {
       v-else-if="section.chart.type === 'pie'"
       :config="chartConfig"
       class="h-[300px] w-full"
+      :key="'pie-' + props.sectionIndex"
     >
-      <VisDonut :data="chartData" :value="(d: ChartDataType) => d.value" :arc-width="80" />
+      <VisSingleContainer :data="chartData">
+        <VisDonut :value="(d: ChartDataType) => d.value" :arc-width="80" />
+      </VisSingleContainer>
     </ChartContainer>
 
     <!-- Line Chart -->
@@ -150,6 +161,7 @@ function handleRemoveChart() {
       v-else-if="section.chart.type === 'line'"
       :config="chartConfig"
       class="h-[300px] w-full"
+      :key="'line-' + props.sectionIndex"
     >
       <VisXYContainer :data="chartData">
         <VisLine
@@ -169,7 +181,10 @@ function handleRemoveChart() {
         <ChartCrosshair
           :template="
             componentToString(chartConfig, ChartTooltipContent, {
-              labelFormatter: (i: number) => chartData[i]?.name || '',
+              labelFormatter: (d: number | Date) => {
+                const index = typeof d === 'number' ? d : d.getTime()
+                return chartData[index]?.name || ''
+              },
             })
           "
           :color="[chartConfig.value.color]"

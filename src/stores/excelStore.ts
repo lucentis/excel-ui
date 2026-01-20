@@ -5,7 +5,7 @@ import { extractRawData } from '@/utils/excelParser'
 import { detectSections } from '@/utils/sectionDetector'
 import { createCardRecap } from '@/utils/cardManager'
 import { setSectionChart } from '@/utils/chartManager'
-// import { createChart, changeChartType } from '@/utils/chartManager'
+import { changeChartType } from '@/utils/chartManager'
 
 /**
  * Store réactif pour l'état de l'application Excel
@@ -139,5 +139,8 @@ export function setChartType(sectionIndex: number, type: ChartType) {
   if (!section?.chart) return
 
   section.chart = changeChartType(section.chart, type)
+
+  console.log(excelStore.currentSheet.sections[sectionIndex])
+
   console.log(`📊 Type de graphique changé pour section ${sectionIndex}:`, type)
 }
