@@ -27,9 +27,9 @@ import {
   VisAxis,
   VisSingleContainer,
   VisTooltip,
+  VisBulletLegend
 } from '@unovis/vue'
 import { Donut } from '@unovis/ts'
-import type { DonutDatum } from '@unovis/ts/components/donut/types'
 
 const triggers = {
   [Donut.selectors.segment]: (d: any ) => {
@@ -41,7 +41,6 @@ const triggers = {
     `
   }
 }
-
 
 const props = defineProps<{
   section: Section
@@ -79,6 +78,7 @@ function handleRemoveChart() {
     toggleSectionChart(props.sectionIndex, props.section.chart.columnIndex)
   }
 }
+
 </script>
 
 <template>
@@ -167,8 +167,16 @@ function handleRemoveChart() {
       :key="'pie-' + props.sectionIndex"
     >
       <VisSingleContainer :data="chartData">
-        <VisDonut :value="(d: ChartDataType) => d.value" :arc-width="80"/>
+        <VisDonut :value="(d: ChartDataType) => d.value" :arc-width="90" :width="100"/>
+
         <VisTooltip :triggers="triggers" />
+
+        <VisBulletLegend 
+          :items="chartData.map(item => ({name: item.name}))"
+          class="absolute"
+          orientation="vertical"
+        />
+
       </VisSingleContainer>
     </ChartContainer>
 
@@ -209,3 +217,7 @@ function handleRemoveChart() {
     </ChartContainer>
   </div>
 </template>
+
+<style scoped>
+
+</style>
