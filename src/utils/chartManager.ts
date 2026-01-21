@@ -1,4 +1,3 @@
-import { excelStore } from '@/stores/excelStore'
 import type { Chart, ChartType, Section } from '@/types'
 
 export function isNumericColumn(section: Section, columnIndex: number): boolean {
