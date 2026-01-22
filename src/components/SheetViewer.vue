@@ -128,85 +128,88 @@ function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number
             </h3>
           </div>
 
-          <SectionChart :section="section" :section-index="sectionIndex" />
+          <div class="flex gap-4 items-start">
+            <!-- Tableau de la section -->
+            <div class="border rounded-lg overflow-hidden grow">
+              <div class="overflow-auto max-h-[400px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead class="w-12 bg-gray-50 sticky left-0 z-10">#</TableHead>
+                      <TableHead
+                        v-for="(header, index) in section.header"
+                        :key="index"
+                        class="min-w-[150px]"
+                        :class="[
+                          isCellSelected(sectionIndex, 0, index) && !section.data.length
+                            ? 'bg-blue-100'
+                            : '',
+                        ]"
+                        @click="handleHeaderClick(sectionIndex, index)"
+                      >
+                        <div class="flex items-center gap-4 group">
+                          {{ formatCellValue(header) || `Col ${index + 1}` }}
 
-          <!-- Tableau de la section -->
-          <div class="border rounded-lg overflow-hidden">
-            <div class="overflow-auto max-h-[400px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead class="w-12 bg-gray-50 sticky left-0 z-10">#</TableHead>
-                    <TableHead
-                      v-for="(header, index) in section.header"
-                      :key="index"
-                      class="min-w-[150px]"
-                      :class="[
-                        isCellSelected(sectionIndex, 0, index) && !section.data.length
-                          ? 'bg-blue-100'
-                          : '',
-                      ]"
-                      @click="handleHeaderClick(sectionIndex, index)"
-                    >
-                      <div class="flex items-center gap-4 group">
-                        {{ formatCellValue(header) || `Col ${index + 1}` }}
+                          <Badge
+                            v-if="isCellSelected(sectionIndex, 0, index) && !section.data.length"
+                            class="text-xs bg-sky-100"
+                          >
+                            ⭐
+                          </Badge>
 
-                        <Badge
-                          v-if="isCellSelected(sectionIndex, 0, index) && !section.data.length"
-                          class="text-xs bg-sky-100"
-                        >
-                          ⭐
-                        </Badge>
-
-                        <!-- Icône graphique au hover -->
-                        <button
-                          v-if="isNumericColumn(section, index)"
-                          @click.stop="handleChartIconClick(sectionIndex, index)"
-                          :class="[
-                            'opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100 cursor-pointer',
-                            // isChartActive(sectionIndex, index) ? 'opacity-100 bg-blue-100' : '',
-                          ]"
-                        >
-                          <BarChart3
+                          <!-- Icône graphique au hover -->
+                          <button
+                            v-if="isNumericColumn(section, index)"
+                            @click.stop="handleChartIconClick(sectionIndex, index)"
                             :class="[
-                              'w-4 h-4',
-                              // isChartActive(sectionIndex, index) ? 'text-blue-600' : 'text-gray-500',
+                              'opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100 cursor-pointer',
+                              // isChartActive(sectionIndex, index) ? 'opacity-100 bg-blue-100' : '',
                             ]"
-                          />
-                        </button>
-                      </div>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow v-for="(row, rowIndex) in section.data" :key="rowIndex">
-                    <TableCell class="bg-gray-50 font-medium sticky left-0 z-10">
-                      {{ rowIndex + 1 }}
-                    </TableCell>
-                    <TableCell
-                      v-for="(cell, cellIndex) in row"
-                      :key="cellIndex"
-                      :class="[
-                        'cursor-pointer hover:bg-blue-50',
-                        isCellSelected(sectionIndex, rowIndex, cellIndex) ? 'bg-blue-100' : '',
-                      ]"
-                      @click="handleCellClick(sectionIndex, rowIndex, cellIndex)"
-                    >
-                      <div class="flex items-center gap-2">
-                        {{ formatCellValue(cell) }}
-                        <Badge
-                          v-if="isCellSelected(sectionIndex, rowIndex, cellIndex)"
-                          class="text-xs bg-sky-100"
-                        >
-                          ⭐
-                        </Badge>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
+                          >
+                            <BarChart3
+                              :class="[
+                                'w-4 h-4',
+                                // isChartActive(sectionIndex, index) ? 'text-blue-600' : 'text-gray-500',
+                              ]"
+                            />
+                          </button>
+                        </div>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow v-for="(row, rowIndex) in section.data" :key="rowIndex">
+                      <TableCell class="bg-gray-50 font-medium sticky left-0 z-10">
+                        {{ rowIndex + 1 }}
+                      </TableCell>
+                      <TableCell
+                        v-for="(cell, cellIndex) in row"
+                        :key="cellIndex"
+                        :class="[
+                          'cursor-pointer hover:bg-blue-50',
+                          isCellSelected(sectionIndex, rowIndex, cellIndex) ? 'bg-blue-100' : '',
+                        ]"
+                        @click="handleCellClick(sectionIndex, rowIndex, cellIndex)"
+                      >
+                        <div class="flex items-center gap-2">
+                          {{ formatCellValue(cell) }}
+                          <Badge
+                            v-if="isCellSelected(sectionIndex, rowIndex, cellIndex)"
+                            class="text-xs bg-sky-100"
+                          >
+                            ⭐
+                          </Badge>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
             </div>
-          </div>
+
+            <SectionChart :section="section" :section-index="sectionIndex" />
+          </div>  
+
         </div>
       </div>
     </div>

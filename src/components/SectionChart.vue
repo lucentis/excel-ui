@@ -82,9 +82,9 @@ function handleRemoveChart() {
 </script>
 
 <template>
-  <div v-if="section.chart" class="mb-4 p-4 border rounded-lg bg-white">
+  <div v-if="section.chart" class="p-4 border rounded-lg bg-white">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center justify-between mb-2">
       <div class="flex items-center gap-2">
         <BarChart3 class="w-5 h-5 text-blue-600" />
         <h4 class="font-semibold text-gray-900">{{ valueLabel }}</h4>
@@ -125,7 +125,7 @@ function handleRemoveChart() {
     <ChartContainer
       v-if="section.chart.type === 'bar'"
       :config="chartConfig"
-      class="h-[300px] w-full"
+      class="h-[150px] w-80"
       :key="'bar' + sectionIndex"
     >
       <VisXYContainer :data="chartData">
@@ -134,6 +134,7 @@ function handleRemoveChart() {
           :y="(d: ChartDataType) => d.value"
           :color="chartConfig.value.color"
           :rounded-corners="4"
+          :groupMaxWidth="150"
         />
         <VisAxis
           type="x"
@@ -163,20 +164,18 @@ function handleRemoveChart() {
     <ChartContainer
       v-else-if="section.chart.type === 'pie'"
       :config="chartConfig"
-      class="h-[300px] w-full"
       :key="'pie-' + props.sectionIndex"
+      class="h-[150px] w-80"
     >
-      <VisSingleContainer :data="chartData">
-        <VisDonut :value="(d: ChartDataType) => d.value" :arc-width="90" :width="100"/>
-
+      <VisSingleContainer :data="chartData" :width="150" class="flex! items-center gap-4">
         <VisTooltip :triggers="triggers" />
-
+        
         <VisBulletLegend 
-          :items="chartData.map(item => ({name: item.name}))"
-          class="absolute"
-          orientation="vertical"
+        :items="chartData.map(item => ({name: item.name}))"
+        orientation="vertical"
         />
 
+        <VisDonut :value="(d: ChartDataType) => d.value" :arc-width="50"/>
       </VisSingleContainer>
     </ChartContainer>
 
@@ -184,7 +183,7 @@ function handleRemoveChart() {
     <ChartContainer
       v-else-if="section.chart.type === 'line'"
       :config="chartConfig"
-      class="h-[300px] w-full"
+      class="h-[150px] w-80"
       :key="'line-' + props.sectionIndex"
     >
       <VisXYContainer :data="chartData">
