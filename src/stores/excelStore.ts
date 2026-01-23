@@ -158,6 +158,22 @@ export function setChartType(sectionIndex: number, columnIndex: number, type: Ch
 }
 
 /**
+ * Change la colonne des labels (X) pour un graphique
+ * ✨ Nouvelle fonction
+ */
+export function setChartLabelColumn(sectionIndex: number, chartColumnIndex: number, labelColumnIndex: number) {
+  const section = excelStore.currentSheet.sections[sectionIndex]
+  if (!section?.charts) return
+
+  const chart = section.charts.find(c => c.columnIndex === chartColumnIndex)
+  if (!chart) return
+
+  chart.labelColumnIndex = labelColumnIndex
+
+  console.log(`📊 Colonne de labels changée pour colonne ${chartColumnIndex}: colonne ${labelColumnIndex}`)
+}
+
+/**
  * Toggle l'exclusion d'une ligne pour tous les graphiques d'une section
  * ✨ Mise à jour pour gérer plusieurs charts
  */

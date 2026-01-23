@@ -86,3 +86,16 @@ export function getChartValueLabel(section: Section, chart: Chart): string {
 export function getChartLabelName(section: Section, chart: Chart): string {
   return String(section.header[chart.labelColumnIndex] || 'Label')
 }
+
+/**
+ * Obtient la liste des colonnes non-numériques (candidats pour labels)
+ * Nouvelle fonction
+ */
+export function getLabelCandidateColumns(section: Section): Array<{ index: number; label: string }> {
+  return section.header
+    .map((header, index) => ({
+      index,
+      label: String(header || `Col ${index + 1}`)
+    }))
+    .filter(col => !isNumericColumn(section, col.index))
+}

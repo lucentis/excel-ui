@@ -2,15 +2,20 @@
 import { computed } from 'vue'
 import type { Section, Chart } from '@/types'
 import type { ChartConfig } from '@/components/ui/chart'
-import { prepareChartData, getChartValueLabel } from '@/utils/chartManager'
-import { setChartType, toggleSectionChart } from '@/stores/excelStore'
-import { BarChart3, PieChart, LineChart, Settings2, X, EyeOff } from 'lucide-vue-next'
+import { prepareChartData, getChartValueLabel, getLabelCandidateColumns } from '@/utils/chartManager'
+import { setChartType, toggleSectionChart, setChartLabelColumn } from '@/stores/excelStore'
+import { BarChart3, PieChart, LineChart, Settings2, EyeOff, Tag } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu'
 import {
   ChartContainer,
@@ -56,6 +61,15 @@ const valueLabel = computed(() => {
   return getChartValueLabel(props.section, props.chart)
 })
 
+const labelCandidates = computed(() => {
+  return getLabelCandidateColumns(props.section)
+})
+
+const currentLabelColumn = computed(() => {
+  const col = labelCandidates.value.find(c => c.index === props.chart.labelColumnIndex)
+  return col?.label || 'Label'
+})
+
 const chartConfig = computed(
   () =>
     ({
@@ -70,6 +84,10 @@ type ChartDataType = { index: number; name: string; value: number }
 
 function handleTypeChange(type: 'bar' | 'pie' | 'line') {
   setChartType(props.sectionIndex, props.chart.columnIndex, type)
+}
+
+function handleLabelColumnChange(labelColumnIndex: number) {
+  setChartLabelColumn(props.sectionIndex, props.chart.columnIndex, labelColumnIndex)
 }
 
 function handleHideChart() {
@@ -97,6 +115,7 @@ function handleHideChart() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Type de graphique</DropdownMenuLabel>
             <DropdownMenuItem @click="handleTypeChange('bar')">
               <BarChart3 class="w-4 h-4 mr-2" />
               Barres
@@ -109,6 +128,26 @@ function handleHideChart() {
               <LineChart class="w-4 h-4 mr-2" />
               Lignes
             </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            
+            <!-- ✨ Nouveau : Sélecteur de colonne de labels -->
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Tag class="w-4 h-4 mr-2" />
+                Labels: {{ currentLabelColumn }}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem
+                  v-for="col in labelCandidates"
+                  :key="col.index"
+                  @click="handleLabelColumnChange(col.index)"
+                  :class="col.index === chart.labelColumnIndex ? 'bg-accent' : ''"
+                >
+                  {{ col.label }}
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
           </DropdownMenuContent>
         </DropdownMenu>
 
