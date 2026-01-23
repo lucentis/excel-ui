@@ -140,7 +140,27 @@ export function setChartType(sectionIndex: number, type: ChartType) {
 
   section.chart = changeChartType(section.chart, type)
 
-  console.log(excelStore.currentSheet.sections[sectionIndex])
-
   console.log(`📊 Type de graphique changé pour section ${sectionIndex}:`, type)
+}
+
+/**
+ * Toggle l'exclusion d'une ligne du graphique
+ * ✨ Nouvelle fonction pour exclure/inclure des lignes
+ */
+export function toggleRowExclusion(sectionIndex: number, rowIndex: number) {
+  const section = excelStore.currentSheet.sections[sectionIndex]
+  if (!section?.chart) return
+
+  const excludedRows = section.chart.excludedRows || []
+  const index = excludedRows.indexOf(rowIndex)
+
+  if (index > -1) {
+    // Ligne déjà exclue → la réinclure
+    section.chart.excludedRows = excludedRows.filter(i => i !== rowIndex)
+    console.log(`📊 Ligne ${rowIndex} réincluse dans le graphique`)
+  } else {
+    // Ligne incluse → l'exclure
+    section.chart.excludedRows = [...excludedRows, rowIndex]
+    console.log(`📊 Ligne ${rowIndex} exclue du graphique`)
+  }
 }

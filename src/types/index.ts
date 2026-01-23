@@ -19,6 +19,7 @@ export interface Chart {
   columnIndex: number // Colonne pour les valeurs (Y)
   labelColumnIndex: number // Colonne pour les labels (X)
   type: ChartType
+  excludedRows: number[] // ✨ Nouveau : indices des lignes à exclure
 }
 
 export type ChartType = 'bar' | 'pie' | 'line'

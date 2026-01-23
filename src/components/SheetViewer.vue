@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { excelStore, setCardRecap, setCurrentSheet, toggleSectionChart } from '@/stores/excelStore'
+import { excelStore, setCardRecap, setCurrentSheet, toggleSectionChart, toggleRowExclusion } from '@/stores/excelStore'
 import {
   Table,
   TableBody,
@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Sheet, FileText, BarChart3 } from 'lucide-vue-next'
+import { Sheet, FileText, BarChart3, EyeOff, Eye } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import RecapCards from './RecapCards.vue'
 import { isNumericColumn } from '@/utils/chartManager'
@@ -39,7 +39,6 @@ function handleSheetChange(sheetName: string) {
 }
 
 function handleCellClick(sectionIndex: number, rowIndex: number, colIndex: number) {
-  // if (!excelStore.selectionMode) return
   console.log(sectionIndex, rowIndex, colIndex)
   setCardRecap(sectionIndex, rowIndex, colIndex)
 }
@@ -58,6 +57,16 @@ function handleChartIconClick(sectionIndex: number, colIndex: number) {
 function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number): boolean {
   const section = excelStore.currentSheet.sections[sectionIndex]
   return section?.cardRecap?.rowIndex === rowIndex && section?.cardRecap?.colIndex === colIndex
+}
+
+// ✨ Nouvelles fonctions pour l'exclusion de lignes
+function handleToggleRowInChart(sectionIndex: number, rowIndex: number) {
+  toggleRowExclusion(sectionIndex, rowIndex)
+}
+
+function isRowExcludedFromChart(sectionIndex: number, rowIndex: number): boolean {
+  const section = excelStore.currentSheet.sections[sectionIndex]
+  return section?.chart?.excludedRows?.includes(rowIndex) || false
 }
 </script>
 
@@ -163,24 +172,44 @@ function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number
                             @click.stop="handleChartIconClick(sectionIndex, index)"
                             :class="[
                               'opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100 cursor-pointer',
-                              // isChartActive(sectionIndex, index) ? 'opacity-100 bg-blue-100' : '',
                             ]"
                           >
-                            <BarChart3
-                              :class="[
-                                'w-4 h-4',
-                                // isChartActive(sectionIndex, index) ? 'text-blue-600' : 'text-gray-500',
-                              ]"
-                            />
+                            <BarChart3 class="w-4 h-4" />
                           </button>
                         </div>
                       </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    <TableRow v-for="(row, rowIndex) in section.data" :key="rowIndex">
+                    <TableRow 
+                      v-for="(row, rowIndex) in section.data" 
+                      :key="rowIndex"
+                      class="group"
+                    >
                       <TableCell class="bg-gray-50 font-medium sticky left-0 z-10">
-                        {{ rowIndex + 1 }}
+                        <div class="flex items-center gap-2">
+                          {{ rowIndex + 1 }}
+                          
+                          <!-- ✨ Icône eye si un graphique existe pour cette section -->
+                          <button
+                            v-if="section.chart"
+                            @click="handleToggleRowInChart(sectionIndex, rowIndex)"
+                            :class="[
+                              'opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100',
+                              isRowExcludedFromChart(sectionIndex, rowIndex) ? 'opacity-100' : ''
+                            ]"
+                            :title="isRowExcludedFromChart(sectionIndex, rowIndex) ? 'Inclure dans le graphique' : 'Exclure du graphique'"
+                          >
+                            <EyeOff 
+                              v-if="isRowExcludedFromChart(sectionIndex, rowIndex)"
+                              class="w-4 h-4 text-orange-500"
+                            />
+                            <Eye 
+                              v-else
+                              class="w-4 h-4 text-gray-400"
+                            />
+                          </button>
+                        </div>
                       </TableCell>
                       <TableCell
                         v-for="(cell, cellIndex) in row"
@@ -188,6 +217,7 @@ function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number
                         :class="[
                           'cursor-pointer hover:bg-blue-50',
                           isCellSelected(sectionIndex, rowIndex, cellIndex) ? 'bg-blue-100' : '',
+                          isRowExcludedFromChart(sectionIndex, rowIndex) ? 'opacity-50' : '',
                         ]"
                         @click="handleCellClick(sectionIndex, rowIndex, cellIndex)"
                       >

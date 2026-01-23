@@ -38,6 +38,7 @@ export function setSectionChart(section: Section, columnIndex: number): Chart {
     columnIndex,
     labelColumnIndex,
     type: 'bar', // Type par défaut
+    excludedRows: [], // ✨ Initialiser vide
   }
 }
 
@@ -52,16 +53,21 @@ export function changeChartType(chart: Chart, newType: ChartType): Chart {
 }
 
 /**
- * Prépare les données pour Recharts
+ * Prépare les données pour les graphiques
+ * ✨ Filtre maintenant les lignes exclues
  */
 export function prepareChartData(section: Section, chart: Chart) {
-  const data = section.data.map((row, index) => ({
-    index,
-    name: String(row[chart.labelColumnIndex] || ''),
-    value: Number(row[chart.columnIndex]) || 0,
-  }))
+  const excludedRows = chart.excludedRows || []
+  
+  const data = section.data
+    .map((row, index) => ({
+      index,
+      name: String(row[chart.labelColumnIndex] || ''),
+      value: Number(row[chart.columnIndex]) || 0,
+    }))
+    .filter(item => !excludedRows.includes(item.index)) // ✨ Filtrer les lignes exclues
 
-  console.log(data)
+  console.log(`📊 Données préparées (${data.length}/${section.data.length} lignes)`)
 
   return data
 }
