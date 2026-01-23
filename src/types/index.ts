@@ -5,7 +5,7 @@ export interface Section {
   header: string[]
   data: unknown[][]
   cardRecap?: CardRecap
-  chart?: Chart
+  charts?: Chart[]
 }
 
 export interface CardRecap {
@@ -20,6 +20,7 @@ export interface Chart {
   labelColumnIndex: number // Colonne pour les labels (X)
   type: ChartType
   excludedRows: number[] // ✨ Nouveau : indices des lignes à exclure
+  visible: boolean
 }
 
 export type ChartType = 'bar' | 'pie' | 'line'

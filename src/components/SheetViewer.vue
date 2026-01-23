@@ -59,14 +59,24 @@ function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number
   return section?.cardRecap?.rowIndex === rowIndex && section?.cardRecap?.colIndex === colIndex
 }
 
-// ✨ Nouvelles fonctions pour l'exclusion de lignes
+// ✨ Fonctions mises à jour pour gérer plusieurs charts
 function handleToggleRowInChart(sectionIndex: number, rowIndex: number) {
   toggleRowExclusion(sectionIndex, rowIndex)
 }
 
 function isRowExcludedFromChart(sectionIndex: number, rowIndex: number): boolean {
   const section = excelStore.currentSheet.sections[sectionIndex]
-  return section?.chart?.excludedRows?.includes(rowIndex) || false
+  if (!section?.charts) return false
+  
+  // Une ligne est exclue si au moins un graphique visible l'a exclue
+  return section.charts.some(chart => 
+    chart.visible && chart.excludedRows?.includes(rowIndex)
+  )
+}
+
+function hasVisibleChart(sectionIndex: number): boolean {
+  const section = excelStore.currentSheet.sections[sectionIndex]
+  return section?.charts?.some(chart => chart.visible) || false
 }
 </script>
 
@@ -190,15 +200,15 @@ function isRowExcludedFromChart(sectionIndex: number, rowIndex: number): boolean
                         <div class="flex items-center gap-2">
                           {{ rowIndex + 1 }}
                           
-                          <!-- ✨ Icône eye si un graphique existe pour cette section -->
+                          <!-- ✨ Icône eye si au moins un graphique visible existe pour cette section -->
                           <button
-                            v-if="section.chart"
+                            v-if="hasVisibleChart(sectionIndex)"
                             @click="handleToggleRowInChart(sectionIndex, rowIndex)"
                             :class="[
                               'opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100',
                               isRowExcludedFromChart(sectionIndex, rowIndex) ? 'opacity-100' : ''
                             ]"
-                            :title="isRowExcludedFromChart(sectionIndex, rowIndex) ? 'Inclure dans le graphique' : 'Exclure du graphique'"
+                            :title="isRowExcludedFromChart(sectionIndex, rowIndex) ? 'Inclure dans les graphiques' : 'Exclure des graphiques'"
                           >
                             <EyeOff 
                               v-if="isRowExcludedFromChart(sectionIndex, rowIndex)"
@@ -237,7 +247,16 @@ function isRowExcludedFromChart(sectionIndex: number, rowIndex: number): boolean
               </div>
             </div>
 
-            <SectionChart :section="section" :section-index="sectionIndex" />
+            <!-- ✨ Graphiques de la section (peut en avoir plusieurs) -->
+            <div v-if="section.charts && section.charts.length > 0" class="flex flex-col gap-4">
+              <SectionChart 
+                v-for="chart in section.charts.filter(c => c.visible)" 
+                :key="`chart-${sectionIndex}-${chart.columnIndex}`"
+                :section="section" 
+                :section-index="sectionIndex"
+                :chart="chart"
+              />
+            </div>
           </div>  
 
         </div>

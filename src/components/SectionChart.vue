@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Section } from '@/types'
+import type { Section, Chart } from '@/types'
 import type { ChartConfig } from '@/components/ui/chart'
 import { prepareChartData, getChartValueLabel } from '@/utils/chartManager'
 import { setChartType, toggleSectionChart } from '@/stores/excelStore'
-import { BarChart3, PieChart, LineChart, Settings2, X } from 'lucide-vue-next'
+import { BarChart3, PieChart, LineChart, Settings2, X, EyeOff } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -45,16 +45,15 @@ const triggers = {
 const props = defineProps<{
   section: Section
   sectionIndex: number
+  chart: Chart // ✨ Reçoit maintenant le chart spécifique à afficher
 }>()
 
 const chartData = computed(() => {
-  if (!props.section.chart) return []
-  return prepareChartData(props.section, props.section.chart)
+  return prepareChartData(props.section, props.chart)
 })
 
 const valueLabel = computed(() => {
-  if (!props.section.chart) return ''
-  return getChartValueLabel(props.section, props.section.chart)
+  return getChartValueLabel(props.section, props.chart)
 })
 
 const chartConfig = computed(
@@ -70,19 +69,18 @@ const chartConfig = computed(
 type ChartDataType = { index: number; name: string; value: number }
 
 function handleTypeChange(type: 'bar' | 'pie' | 'line') {
-  setChartType(props.sectionIndex, type)
+  setChartType(props.sectionIndex, props.chart.columnIndex, type)
 }
 
-function handleRemoveChart() {
-  if (props.section.chart) {
-    toggleSectionChart(props.sectionIndex, props.section.chart.columnIndex)
-  }
+function handleHideChart() {
+  // ✨ Cache au lieu de supprimer
+  toggleSectionChart(props.sectionIndex, props.chart.columnIndex)
 }
 
 </script>
 
 <template>
-  <div v-if="section.chart" class="p-4 border rounded-lg bg-white">
+  <div v-if="chart.visible" class="p-4 border rounded-lg bg-white">
     <!-- Header -->
     <div class="flex items-center justify-between mb-2">
       <div class="flex items-center gap-2">
@@ -114,19 +112,19 @@ function handleRemoveChart() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <!-- Remove button -->
-        <Button variant="ghost" size="sm" @click="handleRemoveChart">
-          <X class="w-4 h-4" />
+        <!-- Hide button (au lieu de remove) -->
+        <Button variant="ghost" size="sm" @click="handleHideChart" title="Masquer le graphique">
+          <EyeOff class="w-4 h-4" />
         </Button>
       </div>
     </div>
 
     <!-- Bar Chart -->
     <ChartContainer
-      v-if="section.chart.type === 'bar'"
+      v-if="chart.type === 'bar'"
       :config="chartConfig"
       class="h-[150px] w-80"
-      :key="'bar' + sectionIndex"
+      :key="'bar-' + sectionIndex + '-' + chart.columnIndex"
     >
       <VisXYContainer :data="chartData">
         <VisGroupedBar
@@ -162,9 +160,9 @@ function handleRemoveChart() {
 
     <!-- Pie Chart -->
     <ChartContainer
-      v-else-if="section.chart.type === 'pie'"
+      v-else-if="chart.type === 'pie'"
       :config="chartConfig"
-      :key="'pie-' + props.sectionIndex"
+      :key="'pie-' + sectionIndex + '-' + chart.columnIndex"
       class="h-[150px] w-80"
     >
       <VisSingleContainer :data="chartData" :width="150" class="flex! items-center gap-4">
@@ -181,10 +179,10 @@ function handleRemoveChart() {
 
     <!-- Line Chart -->
     <ChartContainer
-      v-else-if="section.chart.type === 'line'"
+      v-else-if="chart.type === 'line'"
       :config="chartConfig"
       class="h-[150px] w-80"
-      :key="'line-' + props.sectionIndex"
+      :key="'line-' + sectionIndex + '-' + chart.columnIndex"
     >
       <VisXYContainer :data="chartData">
         <VisLine

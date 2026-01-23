@@ -114,53 +114,72 @@ export function getCurrentSheetInfo() {
 }
 
 /**
- * Active un graphique pour une section
+ * Toggle la visibilité d'un graphique pour une colonne
+ * ✨ Ne supprime plus le graphique, juste toggle visible
  */
 export function toggleSectionChart(sectionIndex: number, columnIndex: number) {
   const section = excelStore.currentSheet.sections[sectionIndex]
   if (!section) return
 
-  // Si graphique existe déjà sur cette colonne, le supprimer
-  if (section.chart && section.chart.columnIndex === columnIndex) {
-    section.chart = undefined
-    console.log(`📊 Graphique supprimé pour section ${sectionIndex}`)
+  // Initialiser le tableau de charts si nécessaire
+  if (!section.charts) {
+    section.charts = []
+  }
+
+  // Chercher un graphique existant pour cette colonne
+  const existingChart = section.charts.find(c => c.columnIndex === columnIndex)
+
+  if (existingChart) {
+    // Toggle la visibilité
+    existingChart.visible = !existingChart.visible
+    console.log(`📊 Graphique ${existingChart.visible ? 'affiché' : 'masqué'} pour colonne ${columnIndex}`)
   } else {
     // Créer un nouveau graphique
-    section.chart = setSectionChart(section, columnIndex)
-    console.log(`📊 Graphique créé pour section ${sectionIndex}:`, section.chart)
+    const newChart = setSectionChart(section, columnIndex)
+    section.charts.push(newChart)
+    console.log(`📊 Graphique créé pour colonne ${columnIndex}:`, newChart)
   }
 }
 
 /**
- * Change le type de graphique d'une section
+ * Change le type de graphique d'une section pour une colonne spécifique
+ * ✨ Mise à jour pour gérer plusieurs charts
  */
-export function setChartType(sectionIndex: number, type: ChartType) {
+export function setChartType(sectionIndex: number, columnIndex: number, type: ChartType) {
   const section = excelStore.currentSheet.sections[sectionIndex]
-  if (!section?.chart) return
+  if (!section?.charts) return
 
-  section.chart = changeChartType(section.chart, type)
+  const chart = section.charts.find(c => c.columnIndex === columnIndex)
+  if (!chart) return
 
-  console.log(`📊 Type de graphique changé pour section ${sectionIndex}:`, type)
+  chart.type = type
+
+  console.log(`📊 Type de graphique changé pour colonne ${columnIndex}:`, type)
 }
 
 /**
- * Toggle l'exclusion d'une ligne du graphique
- * ✨ Nouvelle fonction pour exclure/inclure des lignes
+ * Toggle l'exclusion d'une ligne pour tous les graphiques d'une section
+ * ✨ Mise à jour pour gérer plusieurs charts
  */
 export function toggleRowExclusion(sectionIndex: number, rowIndex: number) {
   const section = excelStore.currentSheet.sections[sectionIndex]
-  if (!section?.chart) return
+  if (!section?.charts || section.charts.length === 0) return
 
-  const excludedRows = section.chart.excludedRows || []
-  const index = excludedRows.indexOf(rowIndex)
+  // Appliquer à tous les graphiques visibles de la section
+  section.charts.forEach(chart => {
+    if (!chart.visible) return
 
-  if (index > -1) {
-    // Ligne déjà exclue → la réinclure
-    section.chart.excludedRows = excludedRows.filter(i => i !== rowIndex)
-    console.log(`📊 Ligne ${rowIndex} réincluse dans le graphique`)
-  } else {
-    // Ligne incluse → l'exclure
-    section.chart.excludedRows = [...excludedRows, rowIndex]
-    console.log(`📊 Ligne ${rowIndex} exclue du graphique`)
-  }
+    const excludedRows = chart.excludedRows || []
+    const index = excludedRows.indexOf(rowIndex)
+
+    if (index > -1) {
+      // Ligne déjà exclue → la réinclure
+      chart.excludedRows = excludedRows.filter(i => i !== rowIndex)
+    } else {
+      // Ligne incluse → l'exclure
+      chart.excludedRows = [...excludedRows, rowIndex]
+    }
+  })
+
+  console.log(`📊 Ligne ${rowIndex} toggle pour tous les graphiques de la section`)
 }

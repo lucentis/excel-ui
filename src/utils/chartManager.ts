@@ -38,7 +38,8 @@ export function setSectionChart(section: Section, columnIndex: number): Chart {
     columnIndex,
     labelColumnIndex,
     type: 'bar', // Type par défaut
-    excludedRows: [], // ✨ Initialiser vide
+    excludedRows: [], // Initialiser vide
+    visible: true, // ✨ Visible par défaut
   }
 }
 
