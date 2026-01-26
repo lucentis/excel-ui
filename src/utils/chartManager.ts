@@ -99,3 +99,48 @@ export function getLabelCandidateColumns(section: Section): Array<{ index: numbe
     }))
     .filter(col => !isNumericColumn(section, col.index))
 }
+
+export function toggleChartForSection(
+  section: Section,
+  columnIndex: number,
+) {
+  section.charts ??= []
+
+  const chart = section.charts.find(c => c.columnIndex === columnIndex)
+
+  if (chart) {
+    chart.visible = !chart.visible
+    return
+  }
+
+  section.charts.push(setSectionChart(section, columnIndex))
+}
+
+export function updateChartType(
+  section: Section,
+  columnIndex: number,
+  type: ChartType,
+) {
+  const chart = section.charts?.find(c => c.columnIndex === columnIndex)
+  if (chart) chart.type = type
+}
+
+export function updateChartLabelColumn(
+  section: Section,
+  chartColumnIndex: number,
+  labelColumnIndex: number,
+) {
+  const chart = section.charts?.find(c => c.columnIndex === chartColumnIndex)
+  if (chart) chart.labelColumnIndex = labelColumnIndex
+}
+
+export function toggleRowForCharts(section: Section, rowIndex: number) {
+  section.charts?.forEach(chart => {
+    if (!chart.visible) return
+
+    chart.excludedRows ??= []
+    chart.excludedRows = chart.excludedRows.includes(rowIndex)
+      ? chart.excludedRows.filter(i => i !== rowIndex)
+      : [...chart.excludedRows, rowIndex]
+  })
+}

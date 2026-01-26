@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { Workbook } from 'exceljs'
 import { Upload } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
-import { setWorkbook, excelStore, getCurrentSheetInfo } from '@/stores/excelStore'
+import { setWorkbook, excelStore } from '@/stores/excelStore'
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const isLoading = ref(false)
@@ -54,7 +54,6 @@ async function readExcelFile(file: File) {
       sheets: excelStore.sheetNames,
       sheetCount: excelStore.sheetNames.length,
       currentSheet: excelStore.currentSheet.name,
-      sheetInfo: getCurrentSheetInfo(),
       rawDataPreview: excelStore.currentSheet.rawData.slice(0, 5), // 5 premières lignes
     })
   } catch (err) {
@@ -94,21 +93,6 @@ function triggerFileInput() {
 
       <p v-if="error" class="mt-4 text-sm text-red-600">
         {{ error }}
-      </p>
-    </div>
-
-    <!-- Affichage des infos si fichier chargé -->
-    <div v-if="excelStore.workbook" class="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-      <h4 class="font-semibold text-green-800 mb-2">✅ Fichier chargé</h4>
-      <p class="text-sm text-green-700"><strong>Nom :</strong> {{ excelStore.fileName }}</p>
-      <p class="text-sm text-green-700">
-        <strong>Feuilles :</strong> {{ excelStore.sheetNames.join(', ') }}
-      </p>
-      <p class="text-sm text-green-700">
-        <strong>Feuille active :</strong> {{ excelStore.currentSheet.name }}
-      </p>
-      <p class="text-sm text-green-700">
-        <strong>Lignes :</strong> {{ excelStore.currentSheet.rawData.length }}
       </p>
     </div>
   </div>
