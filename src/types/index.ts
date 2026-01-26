@@ -6,6 +6,7 @@ export interface Section {
   data: unknown[][]
   cardRecap?: CardRecap
   charts?: Chart[]
+  searchText?: string
 }
 
 export interface CardRecap {

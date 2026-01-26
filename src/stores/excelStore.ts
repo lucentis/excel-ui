@@ -5,7 +5,7 @@ import { extractRawData } from '@/utils/excelParser'
 import { detectSections } from '@/utils/sectionDetector'
 import { createCardRecap } from '@/utils/cardManager'
 import { setSectionChart } from '@/utils/chartManager'
-import { changeChartType } from '@/utils/chartManager'
+import { filterSectionData } from '@/utils/filterManager'
 
 /**
  * Store réactif pour l'état de l'application Excel
@@ -198,4 +198,16 @@ export function toggleRowExclusion(sectionIndex: number, rowIndex: number) {
   })
 
   console.log(`📊 Ligne ${rowIndex} toggle pour tous les graphiques de la section`)
+}
+
+/**
+ * Set search text for a section
+ */
+export function setSearchText(sectionIndex: number, searchText: string) {
+  const section = excelStore.currentSheet.sections[sectionIndex]
+  if (!section) return
+
+  section.searchText = searchText
+
+  console.log(`Search text set for section ${sectionIndex}: "${searchText}"`)
 }

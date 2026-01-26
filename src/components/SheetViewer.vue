@@ -21,6 +21,8 @@ import { Badge } from '@/components/ui/badge'
 import RecapCards from './RecapCards.vue'
 import { isNumericColumn } from '@/utils/chartManager'
 import SectionChart from './SectionChart.vue'
+import { filterSectionData } from '@/utils/filterManager'
+import SearchBar from './SearchBar.vue'
 
 const hasData = computed(() => excelStore.currentSheet.rawData.length > 0)
 
@@ -77,6 +79,13 @@ function isRowExcludedFromChart(sectionIndex: number, rowIndex: number): boolean
 function hasVisibleChart(sectionIndex: number): boolean {
   const section = excelStore.currentSheet.sections[sectionIndex]
   return section?.charts?.some(chart => chart.visible) || false
+}
+
+function getFilteredData(sectionIndex: number): unknown[][] {
+  const section = excelStore.currentSheet.sections[sectionIndex]
+  if (!section) return []
+  
+  return filterSectionData(section)
 }
 </script>
 
@@ -139,12 +148,23 @@ function hasVisibleChart(sectionIndex: number): boolean {
           :key="sectionIndex"
           class="space-y-3"
         >
-          <!-- Titre de la section -->
-          <div v-if="section.title" class="flex items-center gap-2">
-            <div class="h-1 w-8 bg-blue-600 rounded"></div>
-            <h3 class="text-xl font-semibold text-gray-900">
-              {{ section.title }}
-            </h3>
+          <!-- Section header with title and search -->
+          <div class="flex items-center justify-between gap-4 mb-3">
+            <!-- Section title -->
+            <div v-if="section.title" class="flex items-center gap-2">
+              <div class="h-1 w-8 bg-blue-600 rounded"></div>
+              <h3 class="text-xl font-semibold text-gray-900">
+                {{ section.title }}
+              </h3>
+            </div>
+
+            <!-- Search bar -->
+            <SearchBar
+              :section="section"
+              :section-index="sectionIndex"
+              :filtered-count="getFilteredData(sectionIndex).length"
+              :total-count="section.data.length"
+            />
           </div>
 
           <div class="flex gap-4 items-start">
@@ -192,7 +212,7 @@ function hasVisibleChart(sectionIndex: number): boolean {
                   </TableHeader>
                   <TableBody>
                     <TableRow 
-                      v-for="(row, rowIndex) in section.data" 
+                      v-for="(row, rowIndex) in getFilteredData(sectionIndex)" 
                       :key="rowIndex"
                       class="group"
                     >
