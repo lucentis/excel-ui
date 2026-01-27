@@ -5,7 +5,8 @@ import type {
     DataMatrix,
     RowData,
     ColumnIndex,
-    RowIndex,
+    SortConfig,
+    SortDirection,
   } from '@/types'
   import { Chart } from './Chart'
   import { CardRecap } from './CardRecap'
@@ -62,6 +63,10 @@ import type {
       return this.config.searchText
     }
   
+    get sortConfig(): SortConfig | undefined {
+      return this.config.sortConfig
+    }
+  
     // ============================================================================
     // Business logic
     // ============================================================================
@@ -72,6 +77,13 @@ import type {
   
     withSearchText(searchText: string): Section {
       return new Section({ ...this.config, searchText })
+    }
+
+    withSort(columnIndex: ColumnIndex, direction: SortDirection): Section {
+      return new Section({ 
+        ...this.config, 
+        sortConfig: { columnIndex, direction } 
+      })
     }
   
     clearSearch(): Section {
@@ -114,6 +126,24 @@ import type {
       const newChart = Chart.create(columnIndex, labelColumnIndex)
       return this.addChart(newChart)
     }
+
+    clearSort(): Section {
+      return new Section({ ...this.config, sortConfig: undefined })
+    }
+
+    toggleSort(columnIndex: ColumnIndex): Section {
+      if (this.config.sortConfig?.columnIndex === columnIndex) {
+        // Same column: toggle direction or clear
+        if (this.config.sortConfig.direction === 'asc') {
+          return this.withSort(columnIndex, 'desc')
+        } else {
+          return this.clearSort()
+        }
+      } else {
+        // New column: start with asc
+        return this.withSort(columnIndex, 'asc')
+      }
+    }
   
     // ============================================================================
     // Query methods
@@ -128,6 +158,7 @@ import type {
         hasCardRecap: !!this.config.cardRecap,
         hasActiveSearch: !!this.config.searchText,
         isEmpty: this.config.data.length === 0,
+        hasActiveSort: !!this.config.sortConfig,
       }
     }
   

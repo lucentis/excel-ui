@@ -94,4 +94,18 @@ export class SectionService {
   static clearSearch(section: Section): Section {
     return section.clearSearch()
   }
+
+  /**
+   * Toggle column sort
+   */
+  static toggleSort(section: Section, columnIndex: ColumnIndex): Section {
+    return section.toggleSort(columnIndex)
+  }
+
+  /**
+   * Clear sort
+   */
+  static clearSort(section: Section): Section {
+    return section.clearSort()
+  }
 }

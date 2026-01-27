@@ -161,3 +161,21 @@ export function toggleRowExclusion(sectionIndex: number, rowIndex: number): void
     SectionService.toggleRowExclusion(section, rowIndex)
   )
 }
+
+/**
+ * Toggle column sort for a section
+ */
+export function toggleColumnSort(sectionIndex: number, columnIndex: number): void {
+  updateSection(sectionIndex, section =>
+    SectionService.toggleSort(section, columnIndex)
+  )
+}
+
+/**
+ * Clear sort for a section
+ */
+export function clearSort(sectionIndex: number): void {
+  updateSection(sectionIndex, section =>
+    SectionService.clearSort(section)
+  )
+}

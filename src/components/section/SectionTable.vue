@@ -22,6 +22,7 @@ const emit = defineEmits<{
   headerClick: [colIndex: number]
   chartIconClick: [colIndex: number]
   toggleRowExclusion: [rowIndex: number]
+  sortClick: [colIndex: number]
 }>()
 
 const sectionModel = computed(() => Section.fromConfig(props.section))
@@ -60,8 +61,10 @@ function getSelectedCell(): { row: number; col: number } | null {
             :numeric-columns="numericColumns"
             :selected-cell="getSelectedCell()"
             :has-data-rows="section.data.length > 0"
+            :sort-config="section.sortConfig"
             @header-click="(colIndex) => emit('headerClick', colIndex)"
             @chart-icon-click="(colIndex) => emit('chartIconClick', colIndex)"
+            @sort-click="(colIndex) => emit('sortClick', colIndex)"
           />
         </TableHeader>
         <TableBody>

@@ -1,5 +1,5 @@
 /**
- * Types relatifs aux sections
+ * Types for sections
  */
 
 import type { DataMatrix, RowData } from '../common/base'
@@ -7,56 +7,75 @@ import type { ChartConfig } from './chart'
 import type { CardRecapConfig } from './card'
 
 /**
- * Configuration d'une section
+ * Sort direction
  */
-export interface SectionConfig {
-  /** Titre optionnel de la section */
-  title?: string
-  
-  /** En-têtes de colonnes */
-  header: RowData
-  
-  /** Données de la section */
-  data: DataMatrix
-  
-  /** Configuration de la carte récap (optionnel) */
-  cardRecap?: CardRecapConfig
-  
-  /** Configurations des graphiques */
-  charts?: ChartConfig[]
-  
-  /** Configuration de recherche/filtre */
-  searchText?: string
+export type SortDirection = 'asc' | 'desc'
+
+/**
+ * Sort configuration for a section
+ */
+export interface SortConfig {
+  columnIndex: number
+  direction: SortDirection
 }
 
 /**
- * Métadonnées d'une section
+ * Section configuration
+ */
+export interface SectionConfig {
+  /** Optional section title */
+  title?: string
+  
+  /** Column headers */
+  header: RowData
+  
+  /** Section data */
+  data: DataMatrix
+  
+  /** Recap card configuration (optional) */
+  cardRecap?: CardRecapConfig
+  
+  /** Chart configurations */
+  charts?: ChartConfig[]
+  
+  /** Search/filter configuration */
+  searchText?: string
+  
+  /** Sort configuration */
+  sortConfig?: SortConfig
+}
+
+/**
+ * Section metadata
  */
 export interface SectionMetadata {
-  /** Nombre de colonnes */
+  /** Number of columns */
   columnCount: number
   
-  /** Nombre de lignes de données */
+  /** Number of data rows */
   rowCount: number
   
-  /** Nombre de graphiques */
+  /** Number of charts */
   chartCount: number
   
-  /** Nombre de graphiques visibles */
+  /** Number of visible charts */
   visibleChartCount: number
   
-  /** A une carte récap */
+  /** Has a recap card */
   hasCardRecap: boolean
   
-  /** A une recherche active */
+  /** Has active search */
   hasActiveSearch: boolean
   
-  /** Est vide (pas de données) */
+  /** Has active sort */
+  hasActiveSort: boolean
+  
+  /** Is empty (no data) */
   isEmpty: boolean
 }
 
 /**
- * Options pour créer une section
+ * Options for creating a section
  */
 export interface CreateSectionOptions {
   title?: string
@@ -65,30 +84,30 @@ export interface CreateSectionOptions {
 }
 
 /**
- * Informations de colonnes
+ * Column information
  */
 export interface ColumnInfo {
-  /** Index de la colonne */
+  /** Column index */
   index: number
   
-  /** Label de la colonne */
+  /** Column label */
   label: string
   
-  /** Type détecté */
+  /** Detected type */
   type: 'text' | 'number' | 'date' | 'boolean' | 'mixed' | 'empty'
   
-  /** Est numérique */
+  /** Is numeric */
   isNumeric: boolean
   
-  /** Est vide */
+  /** Is empty */
   isEmpty: boolean
   
-  /** Valeurs uniques (pour les filtres) */
+  /** Unique values (for filters) */
   uniqueValues?: Set<unknown>
 }
 
 /**
- * Analyse d'une section
+ * Section analysis
  */
 export interface SectionAnalysis {
   metadata: SectionMetadata
@@ -98,7 +117,7 @@ export interface SectionAnalysis {
 }
 
 /**
- * État complet d'une section
+ * Complete section state
  */
 export interface SectionState extends SectionConfig {
   metadata: SectionMetadata

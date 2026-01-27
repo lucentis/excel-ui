@@ -6,6 +6,7 @@ import {
   setCardRecap,
   toggleSectionChart,
   toggleRowExclusion,
+  toggleColumnSort,
 } from '@/stores/excelStore'
 import SectionHeader from './SectionHeader.vue'
 import SectionTable from './SectionTable.vue'
@@ -17,7 +18,7 @@ const props = defineProps<{
 }>()
 
 const filteredData = computed(() => {
-  return FilterService.filterSectionData(props.section)
+  return FilterService.applyFiltersAndSort(props.section)
 })
 
 function handleCellClick(rowIndex: number, colIndex: number) {
@@ -35,6 +36,10 @@ function handleChartIconClick(colIndex: number) {
 
 function handleToggleRowExclusion(rowIndex: number) {
   toggleRowExclusion(props.sectionIndex, rowIndex)
+}
+
+function handleSortClick(colIndex: number) {
+  toggleColumnSort(props.sectionIndex, colIndex)
 }
 </script>
 
@@ -56,6 +61,7 @@ function handleToggleRowExclusion(rowIndex: number) {
         @header-click="handleHeaderClick"
         @chart-icon-click="handleChartIconClick"
         @toggle-row-exclusion="handleToggleRowExclusion"
+        @sort-click="handleSortClick"
       />
 
       <SectionChartList

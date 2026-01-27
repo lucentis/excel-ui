@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SectionConfig } from '@/types'
-import SectionChart from '@/components/SectionChart.vue'
+import SectionChart from '@/components/section/SectionChart.vue'
 
 defineProps<{
   section: SectionConfig
