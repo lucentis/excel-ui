@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Section, Chart } from '@/types'
+import type { SectionConfig, ChartConfig as ChartConfigType } from '@/types'
 import type { ChartConfig } from '@/components/ui/chart'
-import { prepareChartData, getChartValueLabel, getLabelCandidateColumns } from '@/utils/chartManager'
+import { Chart, Section } from '@/models'
+import { ChartService } from '@/services'
 import { setChartType, toggleSectionChart, setChartLabelColumn } from '@/stores/excelStore'
 import { BarChart3, PieChart, LineChart, Settings2, EyeOff, Tag } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
@@ -48,21 +49,25 @@ const triggers = {
 }
 
 const props = defineProps<{
-  section: Section
+  section: SectionConfig
   sectionIndex: number
-  chart: Chart // ✨ Reçoit maintenant le chart spécifique à afficher
+  chart: ChartConfigType
 }>()
 
+// Convert to models for business logic
+const sectionModel = computed(() => Section.fromConfig(props.section))
+const chartModel = computed(() => Chart.fromConfig(props.chart))
+
 const chartData = computed(() => {
-  return prepareChartData(props.section, props.chart)
+  return ChartService.prepareChartData(props.section, chartModel.value)
 })
 
 const valueLabel = computed(() => {
-  return getChartValueLabel(props.section, props.chart)
+  return ChartService.getChartValueLabel(props.section, chartModel.value)
 })
 
 const labelCandidates = computed(() => {
-  return getLabelCandidateColumns(props.section)
+  return ChartService.getLabelCandidateColumns(props.section)
 })
 
 const currentLabelColumn = computed(() => {
@@ -91,7 +96,6 @@ function handleLabelColumnChange(labelColumnIndex: number) {
 }
 
 function handleHideChart() {
-  // ✨ Cache au lieu de supprimer
   toggleSectionChart(props.sectionIndex, props.chart.columnIndex)
 }
 
@@ -115,23 +119,23 @@ function handleHideChart() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Type de graphique</DropdownMenuLabel>
+            <DropdownMenuLabel>Chart type</DropdownMenuLabel>
             <DropdownMenuItem @click="handleTypeChange('bar')">
               <BarChart3 class="w-4 h-4 mr-2" />
-              Barres
+              Bar
             </DropdownMenuItem>
             <DropdownMenuItem @click="handleTypeChange('pie')">
               <PieChart class="w-4 h-4 mr-2" />
-              Camembert
+              Pie
             </DropdownMenuItem>
             <DropdownMenuItem @click="handleTypeChange('line')">
               <LineChart class="w-4 h-4 mr-2" />
-              Lignes
+              Line
             </DropdownMenuItem>
             
             <DropdownMenuSeparator />
             
-            <!-- ✨ Nouveau : Sélecteur de colonne de labels -->
+            <!-- Label column selector -->
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 <Tag class="w-4 h-4 mr-2" />
@@ -151,8 +155,8 @@ function handleHideChart() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <!-- Hide button (au lieu de remove) -->
-        <Button variant="ghost" size="sm" @click="handleHideChart" title="Masquer le graphique">
+        <!-- Hide button -->
+        <Button variant="ghost" size="sm" @click="handleHideChart" title="Hide chart">
           <EyeOff class="w-4 h-4" />
         </Button>
       </div>

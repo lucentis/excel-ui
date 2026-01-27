@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { excelStore, setCardRecap, setCurrentSheet, toggleSectionChart, toggleRowExclusion } from '@/stores/excelStore'
+import { Section } from '@/models'
+import { ChartService, FilterService } from '@/services'
 import {
   Table,
   TableBody,
@@ -19,9 +21,7 @@ import {
 import { Sheet, FileText, BarChart3, EyeOff, Eye } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import RecapCards from './RecapCards.vue'
-import { isNumericColumn } from '@/utils/chartManager'
 import SectionChart from './SectionChart.vue'
-import { filterSectionData } from '@/utils/filterManager'
 import SearchBar from './SearchBar.vue'
 
 const hasData = computed(() => excelStore.currentSheet.rawData.length > 0)
@@ -31,7 +31,7 @@ const hasSections = computed(() => excelStore.currentSheet.sections.length > 0)
 function formatCellValue(value: unknown): string {
   if (value === null || value === undefined) return ''
   if (typeof value === 'number') return value.toLocaleString('fr-FR')
-  if (typeof value === 'boolean') return value ? 'Oui' : 'Non'
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
   if (value instanceof Date) return value.toLocaleDateString('fr-FR')
   return String(value)
 }
@@ -41,7 +41,6 @@ function handleSheetChange(sheetName: string) {
 }
 
 function handleCellClick(sectionIndex: number, rowIndex: number, colIndex: number) {
-  console.log(sectionIndex, rowIndex, colIndex)
   setCardRecap(sectionIndex, rowIndex, colIndex)
 }
 
@@ -61,37 +60,46 @@ function isCellSelected(sectionIndex: number, rowIndex: number, colIndex: number
   return section?.cardRecap?.rowIndex === rowIndex && section?.cardRecap?.colIndex === colIndex
 }
 
-// ✨ Fonctions mises à jour pour gérer plusieurs charts
 function handleToggleRowInChart(sectionIndex: number, rowIndex: number) {
   toggleRowExclusion(sectionIndex, rowIndex)
 }
 
 function isRowExcludedFromChart(sectionIndex: number, rowIndex: number): boolean {
-  const section = excelStore.currentSheet.sections[sectionIndex]
-  if (!section?.charts) return false
+  const sectionConfig = excelStore.currentSheet.sections[sectionIndex]
+  if (!sectionConfig?.charts) return false
   
-  // Une ligne est exclue si au moins un graphique visible l'a exclue
-  return section.charts.some(chart => 
-    chart.visible && chart.excludedRows?.includes(rowIndex)
-  )
+  const section = Section.fromConfig(sectionConfig)
+  const visibleCharts = section.getVisibleCharts()
+  
+  return visibleCharts.some(chart => chart.isRowExcluded(rowIndex))
 }
 
 function hasVisibleChart(sectionIndex: number): boolean {
-  const section = excelStore.currentSheet.sections[sectionIndex]
-  return section?.charts?.some(chart => chart.visible) || false
+  const sectionConfig = excelStore.currentSheet.sections[sectionIndex]
+  if (!sectionConfig) return false
+  
+  const section = Section.fromConfig(sectionConfig)
+  return section.getVisibleCharts().length > 0
 }
 
 function getFilteredData(sectionIndex: number): unknown[][] {
-  const section = excelStore.currentSheet.sections[sectionIndex]
-  if (!section) return []
+  const sectionConfig = excelStore.currentSheet.sections[sectionIndex]
+  if (!sectionConfig) return []
   
-  return filterSectionData(section)
+  return FilterService.filterSectionData(sectionConfig)
+}
+
+function isNumericColumn(sectionIndex: number, columnIndex: number): boolean {
+  const sectionConfig = excelStore.currentSheet.sections[sectionIndex]
+  if (!sectionConfig) return false
+  
+  return ChartService.isNumericColumn(sectionConfig, columnIndex)
 }
 </script>
 
 <template>
   <div class="w-full space-y-6">
-    <!-- En-tête document -->
+    <!-- Document header -->
     <div class="flex items-center justify-between pb-4 border-b">
       <div class="flex items-center gap-3">
         <FileText class="w-6 h-6 text-blue-600" />
@@ -108,14 +116,14 @@ function getFilteredData(sectionIndex: number): unknown[][] {
         </div>
       </div>
 
-      <!-- Sélecteur de feuille -->
+      <!-- Sheet selector -->
       <Select
         v-if="excelStore.sheetNames.length > 1"
         :model-value="excelStore.currentSheet.name"
         @update:model-value="(sheetName) => handleSheetChange(sheetName as string)"
       >
         <SelectTrigger class="w-[200px]">
-          <SelectValue placeholder="Choisir une feuille" />
+          <SelectValue placeholder="Choose a sheet" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem
@@ -132,17 +140,16 @@ function getFilteredData(sectionIndex: number): unknown[][] {
       </Select>
     </div>
 
-    <!-- Message si pas de données -->
-    <div v-if="!hasData" class="text-center py-12 text-gray-500">Aucune donnée à afficher</div>
+    <!-- No data message -->
+    <div v-if="!hasData" class="text-center py-12 text-gray-500">No data to display</div>
 
-    <!-- Affichage avec sections -->
+    <!-- Display with sections -->
     <div v-else-if="hasSections">
-      <!-- Cards Recap -->
+      <!-- Recap cards -->
       <RecapCards />
 
       <!-- Sections -->
       <div class="space-y-8">
-        <!-- Section par section -->
         <div
           v-for="(section, sectionIndex) in excelStore.currentSheet.sections"
           :key="sectionIndex"
@@ -168,7 +175,7 @@ function getFilteredData(sectionIndex: number): unknown[][] {
           </div>
 
           <div class="flex gap-4 items-start">
-            <!-- Tableau de la section -->
+            <!-- Section table -->
             <div class="border rounded-lg overflow-hidden grow">
               <div class="overflow-auto max-h-[400px]">
                 <Table>
@@ -196,9 +203,9 @@ function getFilteredData(sectionIndex: number): unknown[][] {
                             ⭐
                           </Badge>
 
-                          <!-- Icône graphique au hover -->
+                          <!-- Chart icon on hover -->
                           <button
-                            v-if="isNumericColumn(section, index)"
+                            v-if="isNumericColumn(sectionIndex, index)"
                             @click.stop="handleChartIconClick(sectionIndex, index)"
                             :class="[
                               'opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100 cursor-pointer',
@@ -220,7 +227,7 @@ function getFilteredData(sectionIndex: number): unknown[][] {
                         <div class="flex items-center gap-2">
                           {{ rowIndex + 1 }}
                           
-                          <!-- ✨ Icône eye si au moins un graphique visible existe pour cette section -->
+                          <!-- Eye icon if at least one visible chart exists -->
                           <button
                             v-if="hasVisibleChart(sectionIndex)"
                             @click="handleToggleRowInChart(sectionIndex, rowIndex)"
@@ -228,7 +235,7 @@ function getFilteredData(sectionIndex: number): unknown[][] {
                               'opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100',
                               isRowExcludedFromChart(sectionIndex, rowIndex) ? 'opacity-100' : ''
                             ]"
-                            :title="isRowExcludedFromChart(sectionIndex, rowIndex) ? 'Inclure dans les graphiques' : 'Exclure des graphiques'"
+                            :title="isRowExcludedFromChart(sectionIndex, rowIndex) ? 'Include in charts' : 'Exclude from charts'"
                           >
                             <EyeOff 
                               v-if="isRowExcludedFromChart(sectionIndex, rowIndex)"
@@ -267,7 +274,7 @@ function getFilteredData(sectionIndex: number): unknown[][] {
               </div>
             </div>
 
-            <!-- ✨ Graphiques de la section (peut en avoir plusieurs) -->
+            <!-- Section charts -->
             <div v-if="section.charts && section.charts.length > 0" class="flex flex-col gap-4">
               <SectionChart 
                 v-for="chart in section.charts.filter(c => c.visible)" 
@@ -283,7 +290,7 @@ function getFilteredData(sectionIndex: number): unknown[][] {
       </div>
     </div>
 
-    <!-- Fallback : affichage brut si pas de sections -->
+    <!-- Fallback: raw display if no sections -->
     <div v-else class="border rounded-lg overflow-hidden">
       <div class="overflow-auto max-h-[600px]">
         <Table>
@@ -295,7 +302,7 @@ function getFilteredData(sectionIndex: number): unknown[][] {
                 :key="index"
                 class="min-w-[150px]"
               >
-                {{ formatCellValue(header) || `Colonne ${index + 1}` }}
+                {{ formatCellValue(header) || `Column ${index + 1}` }}
               </TableHead>
             </TableRow>
           </TableHeader>

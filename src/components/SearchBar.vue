@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Section } from '@/types'
+import type { SectionConfig } from '@/types'
 import { setSearchText } from '@/stores/excelStore'
 import { Search, X } from 'lucide-vue-next'
 import { Input } from '@/components/ui/input'
 
 const props = defineProps<{
-  section: Section
+  section: SectionConfig
   sectionIndex: number
   filteredCount: number
   totalCount: number
@@ -25,7 +25,7 @@ const searchText = computed({
       <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
       <Input
         v-model="searchText"
-        :placeholder="`Search in ${props.section.title}...`"
+        :placeholder="`Search in ${props.section.title || 'section'}...`"
         class="pl-9 pr-9 h-9"
       />
       <button

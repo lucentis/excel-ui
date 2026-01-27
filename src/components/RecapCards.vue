@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { excelStore } from '@/stores/excelStore'
-import { TrendingUp, TrendingDown, Minus } from 'lucide-vue-next'
 
 const cardsData = computed(() => {
   return excelStore.currentSheet.sections
