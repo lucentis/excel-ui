@@ -2,6 +2,8 @@
  * Types utilitaires de base
  */
 
+import type { Cell, CellErrorValue, CellFormulaValue, CellSharedFormulaValue } from "exceljs"
+
 /**
  * Identifiant unique
  */
@@ -39,7 +41,7 @@ export type DeepReadonly<T> = {
 /**
  * Valeur de cellule Excel (types possibles)
  */
-export type CellValue = string | number | boolean | Date | null | undefined
+export type CellValue = string | number | boolean | Date | CellErrorValue | CellFormulaValue | CellSharedFormulaValue | null | undefined | Cell
 
 /**
  * Ligne de données (tableau de cellules)
