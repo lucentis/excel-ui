@@ -1,33 +1,34 @@
 import { reactive } from 'vue'
 import type { Workbook } from 'exceljs'
-import type { ExcelStore, ChartType } from '@/types'
-import { buildSheetState } from '@/utils/sheetManager'
-import {
-  toggleChartForSection,
-  updateChartType,
-  updateChartLabelColumn,
-  toggleRowForCharts,
-} from '@/utils/chartManager'
-import { buildCardRecap } from '@/utils/sectionManager'
+import type { WorkbookConfig, ChartType } from '@/types'
+import { Sheet } from '@/models'
+import { SheetService, SectionService } from '@/services'
 
-export const excelStore = reactive<ExcelStore>({
+/**
+ * Excel Store
+ * Simple reactive state orchestrator
+ */
+export const excelStore = reactive<WorkbookConfig>({
   workbook: null,
   fileName: '',
   sheetNames: [],
   currentSheet: {
     name: '',
-    workSheet: null,
+    worksheet: null,
     rawData: [],
     title: '',
     sections: [],
   },
 })
 
-/* =======================
-   Workbook / Sheet
-======================= */
+// ============================================================================
+// Workbook Operations
+// ============================================================================
 
-export function setWorkbook(wb: Workbook, name: string) {
+/**
+ * Load a workbook and set the first sheet as current
+ */
+export function setWorkbook(wb: Workbook, name: string): void {
   excelStore.workbook = wb
   excelStore.fileName = name
   excelStore.sheetNames = wb.worksheets.map(ws => ws.name)
@@ -37,86 +38,126 @@ export function setWorkbook(wb: Workbook, name: string) {
   }
 }
 
-export function setCurrentSheet(sheetName: string) {
+/**
+ * Switch to a different sheet
+ */
+export function setCurrentSheet(sheetName: string): void {
   if (!excelStore.workbook) return
 
   const worksheet = excelStore.workbook.getWorksheet(sheetName)
   if (!worksheet) return
 
-  excelStore.currentSheet = buildSheetState(sheetName, worksheet)
+  const sheet = SheetService.buildSheet(sheetName, worksheet)
+  excelStore.currentSheet = sheet.toConfig()
 }
 
-export function clearWorkbook() {
+/**
+ * Clear the workbook and reset state
+ */
+export function clearWorkbook(): void {
   excelStore.workbook = null
   excelStore.fileName = ''
   excelStore.sheetNames = []
   excelStore.currentSheet = {
     name: '',
-    workSheet: null,
+    worksheet: null,
     rawData: [],
     title: '',
     sections: [],
   }
 }
 
-/* =======================
-   Sections
-======================= */
+// ============================================================================
+// Section Operations
+// ============================================================================
 
+/**
+ * Update a section using a function
+ */
+function updateSection(
+  sectionIndex: number,
+  updater: (section: import('@/models').Section) => import('@/models').Section
+): void {
+  const sheet = Sheet.fromConfig(excelStore.currentSheet)
+  const updatedSheet = SheetService.updateSection(sheet, sectionIndex, updater)
+  excelStore.currentSheet = updatedSheet.toConfig()
+}
+
+/**
+ * Set card recap for a cell
+ */
 export function setCardRecap(
   sectionIndex: number,
   rowIndex: number,
-  colIndex: number,
-) {
-  const section = excelStore.currentSheet.sections[sectionIndex]
-  if (!section) return
-
-  section.cardRecap = buildCardRecap(section, rowIndex, colIndex)
+  colIndex: number
+): void {
+  updateSection(sectionIndex, section =>
+    SectionService.setCardRecap(section, rowIndex, colIndex)
+  )
 }
 
-export function setSearchText(sectionIndex: number, searchText: string) {
-  const section = excelStore.currentSheet.sections[sectionIndex]
-  if (!section) return
-
-  section.searchText = searchText
+/**
+ * Set search text for a section
+ */
+export function setSearchText(sectionIndex: number, searchText: string): void {
+  updateSection(sectionIndex, section =>
+    SectionService.setSearchText(section, searchText)
+  )
 }
 
-/* =======================
-   Charts
-======================= */
-
-export function toggleSectionChart(sectionIndex: number, columnIndex: number) {
-  const section = excelStore.currentSheet.sections[sectionIndex]
-  if (!section) return
-
-  toggleChartForSection(section, columnIndex)
+/**
+ * Clear search text for a section
+ */
+export function clearSearch(sectionIndex: number): void {
+  updateSection(sectionIndex, section =>
+    SectionService.clearSearch(section)
+  )
 }
 
+// ============================================================================
+// Chart Operations
+// ============================================================================
+
+/**
+ * Toggle chart visibility/creation for a column
+ */
+export function toggleSectionChart(sectionIndex: number, columnIndex: number): void {
+  updateSection(sectionIndex, section =>
+    SectionService.toggleChart(section, columnIndex)
+  )
+}
+
+/**
+ * Change chart type
+ */
 export function setChartType(
   sectionIndex: number,
   columnIndex: number,
-  type: ChartType,
-) {
-  const section = excelStore.currentSheet.sections[sectionIndex]
-  if (!section) return
-
-  updateChartType(section, columnIndex, type)
+  type: ChartType
+): void {
+  updateSection(sectionIndex, section =>
+    SectionService.setChartType(section, columnIndex, type)
+  )
 }
 
+/**
+ * Change chart label column
+ */
 export function setChartLabelColumn(
   sectionIndex: number,
   chartColumnIndex: number,
-  labelColumnIndex: number,
-) {
-  const section = excelStore.currentSheet.sections[sectionIndex]
-  if (!section) return
-
-  updateChartLabelColumn(section, chartColumnIndex, labelColumnIndex)
+  labelColumnIndex: number
+): void {
+  updateSection(sectionIndex, section =>
+    SectionService.setChartLabelColumn(section, chartColumnIndex, labelColumnIndex)
+  )
 }
 
-export function toggleRowExclusion(sectionIndex: number, rowIndex: number) {
-  const section = excelStore.currentSheet.sections[sectionIndex]
-  if (!section) return
-
-  toggleRowForCharts(section, rowIndex)
+/**
+ * Toggle row exclusion for all visible charts in section
+ */
+export function toggleRowExclusion(sectionIndex: number, rowIndex: number): void {
+  updateSection(sectionIndex, section =>
+    SectionService.toggleRowExclusion(section, rowIndex)
+  )
 }
