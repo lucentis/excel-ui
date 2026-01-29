@@ -46,7 +46,7 @@ export function setCurrentSheet(sheetName: string): void {
   if (!excelStore.workbook) return
 
   if (excelStore.sheets[sheetName]) {
-    excelStore.currentSheet = excelStore.sheets[sheetName].toConfig()
+    excelStore.currentSheet = excelStore.sheets[sheetName]
     return
   }
 
@@ -55,7 +55,7 @@ export function setCurrentSheet(sheetName: string): void {
 
   const sheet = SheetService.buildSheet(sheetName, worksheet)
 
-  excelStore.sheets[sheetName] = sheet
+  excelStore.sheets[sheetName] = sheet.toConfig()
   excelStore.currentSheet = sheet.toConfig()
 }
 
@@ -89,7 +89,7 @@ function updateSection(
   const sheet = Sheet.fromConfig(excelStore.currentSheet)
   const updatedSheet = SheetService.updateSection(sheet, sectionIndex, updater)
 
-  excelStore.sheets[updatedSheet.name] = updatedSheet
+  excelStore.sheets[updatedSheet.name] = updatedSheet.toConfig()
 
   excelStore.currentSheet = updatedSheet.toConfig()
 }

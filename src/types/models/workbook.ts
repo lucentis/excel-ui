@@ -20,7 +20,7 @@ export interface WorkbookConfig {
   /** Noms des feuilles */
   sheetNames: string[]
 
-  sheets: Record<string, Sheet>
+  sheets: Record<string, SheetConfig>
   
   /** Feuille actuellement sélectionnée */
   currentSheet: SheetConfig
