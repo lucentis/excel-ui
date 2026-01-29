@@ -12,6 +12,7 @@ export const excelStore = reactive<WorkbookConfig>({
   workbook: null,
   fileName: '',
   sheetNames: [],
+  sheets: {},
   currentSheet: {
     name: '',
     worksheet: null,
@@ -44,10 +45,17 @@ export function setWorkbook(wb: Workbook, name: string): void {
 export function setCurrentSheet(sheetName: string): void {
   if (!excelStore.workbook) return
 
+  if (excelStore.sheets[sheetName]) {
+    excelStore.currentSheet = excelStore.sheets[sheetName].toConfig()
+    return
+  }
+
   const worksheet = excelStore.workbook.getWorksheet(sheetName)
   if (!worksheet) return
 
   const sheet = SheetService.buildSheet(sheetName, worksheet)
+
+  excelStore.sheets[sheetName] = sheet
   excelStore.currentSheet = sheet.toConfig()
 }
 
@@ -80,6 +88,9 @@ function updateSection(
 ): void {
   const sheet = Sheet.fromConfig(excelStore.currentSheet)
   const updatedSheet = SheetService.updateSection(sheet, sectionIndex, updater)
+
+  excelStore.sheets[updatedSheet.name] = updatedSheet
+
   excelStore.currentSheet = updatedSheet.toConfig()
 }
 
