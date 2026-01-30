@@ -43,6 +43,7 @@ export interface SectionConfig {
   
   /** Sort configuration */
   sortConfig?: SortConfig
+  applyFiltersToCharts: boolean
 }
 
 /**

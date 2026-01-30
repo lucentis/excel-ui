@@ -1,9 +1,8 @@
 import type { 
     ChartConfig, 
-    ChartType, 
-    ChartDataPoint,
-    ChartMetadata,
+    ChartType,
     ColumnIndex,
+    RowData,
     RowIndex,
   } from '@/types'
   
@@ -52,7 +51,7 @@ import type {
       return this.config.type
     }
   
-    get excludedRows(): ReadonlyArray<RowIndex> {
+    get excludedRows(): ReadonlyArray<RowData> {
       return this.config.excludedRows
     }
   
@@ -100,28 +99,28 @@ import type {
       return new Chart({ ...this.config, visible: false })
     }
   
-    toggleRowExclusion(rowIndex: RowIndex): Chart {
-      const excludedRows = this.config.excludedRows.includes(rowIndex)
-        ? this.config.excludedRows.filter(i => i !== rowIndex)
-        : [...this.config.excludedRows, rowIndex]
+    toggleRowExclusion(row: RowData): Chart {
+      const excludedRows = this.config.excludedRows.includes(row)
+        ? this.config.excludedRows.filter(i => i !== row)
+        : [...this.config.excludedRows, row]
   
       return new Chart({ ...this.config, excludedRows })
     }
   
-    excludeRow(rowIndex: RowIndex): Chart {
-      if (this.config.excludedRows.includes(rowIndex)) {
+    excludeRow(row: RowData): Chart {
+      if (this.config.excludedRows.includes(row)) {
         return this
       }
       return new Chart({
         ...this.config,
-        excludedRows: [...this.config.excludedRows, rowIndex],
+        excludedRows: [...this.config.excludedRows, row],
       })
     }
   
-    includeRow(rowIndex: RowIndex): Chart {
+    includeRow(row: RowData): Chart {
       return new Chart({
         ...this.config,
-        excludedRows: this.config.excludedRows.filter(i => i !== rowIndex),
+        excludedRows: this.config.excludedRows.filter(i => i !== row),
       })
     }
   
@@ -133,8 +132,8 @@ import type {
     // Query methods
     // ============================================================================
   
-    isRowExcluded(rowIndex: RowIndex): boolean {
-      return this.config.excludedRows.includes(rowIndex)
+    isRowExcluded(row: RowData): boolean {
+      return this.config.excludedRows.includes(row)
     }
   
     hasExcludedRows(): boolean {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { SectionConfig } from '@/types'
+import type { RowData, SectionConfig } from '@/types'
 import { FilterService } from '@/services'
 import {
   setCardRecap,
@@ -34,8 +34,8 @@ function handleChartIconClick(colIndex: number) {
   toggleSectionChart(props.sectionIndex, colIndex)
 }
 
-function handleToggleRowExclusion(rowIndex: number) {
-  toggleRowExclusion(props.sectionIndex, rowIndex)
+function handleToggleRowExclusion(row: RowData) {
+  toggleRowExclusion(props.sectionIndex, row)
 }
 
 function handleSortClick(colIndex: number) {

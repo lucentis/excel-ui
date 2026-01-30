@@ -6,7 +6,10 @@ import type {
   SectionConfig,
   ColumnIndex,
   RowIndex,
+  RowData,
+  DataMatrix,
 } from '@/types'
+import { FilterService } from './FilterService'
 
 /**
  * ChartService
@@ -57,17 +60,28 @@ export class ChartService {
    * Filters out excluded rows
    */
   static prepareChartData(section: SectionConfig, chart: Chart): ChartData {
-    const excludedRows = chart.excludedRows
+    let dataSource: DataMatrix
+  
+    const shouldApplyFilters = section.applyFiltersToCharts !== false
+    const hasActiveFilters = FilterService.hasActiveSearch(section) || 
+                            FilterService.hasActiveSort(section)
     
-    const data = section.data
+    if (shouldApplyFilters && hasActiveFilters) {
+      // Utiliser les données filtrées/triées
+      dataSource = FilterService.applyFiltersAndSort(section)
+    } else {
+      // Utiliser les données brutes
+      dataSource = section.data
+    }
+    
+    // Préparer les points du chart
+    return dataSource.filter(item => !chart.excludedRows.includes(item))
       .map((row, index): ChartDataPoint => ({
         index,
         name: String(row[chart.labelColumnIndex] || ''),
         value: Number(row[chart.columnIndex]) || 0,
       }))
-      .filter(item => !excludedRows.includes(item.index))
-
-    return data
+      
   }
 
   /**
@@ -113,7 +127,7 @@ export class ChartService {
   /**
    * Toggle row exclusion in chart
    */
-  static toggleRowExclusion(chart: Chart, rowIndex: RowIndex): Chart {
-    return chart.toggleRowExclusion(rowIndex)
+  static toggleRowExclusion(chart: Chart, row: RowData): Chart {
+    return chart.toggleRowExclusion(row)
   }
 }

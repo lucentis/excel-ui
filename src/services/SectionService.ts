@@ -5,6 +5,7 @@ import type {
   RowIndex,
   ColumnIndex,
   ChartType,
+  RowData,
 } from '@/types'
 
 /**
@@ -66,7 +67,7 @@ export class SectionService {
    */
   static toggleRowExclusion(
     section: Section,
-    rowIndex: RowIndex,
+    row: RowData,
   ): Section {
     const visibleCharts = section.getVisibleCharts()
     
@@ -74,7 +75,7 @@ export class SectionService {
     for (const chart of visibleCharts) {
       updatedSection = updatedSection.updateChart(
         chart.columnIndex,
-        c => ChartService.toggleRowExclusion(c, rowIndex)
+        c => ChartService.toggleRowExclusion(c, row)
       )
     }
 

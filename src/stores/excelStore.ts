@@ -1,6 +1,6 @@
 import { reactive } from 'vue'
 import type { Workbook } from 'exceljs'
-import type { WorkbookConfig, ChartType } from '@/types'
+import type { WorkbookConfig, ChartType, RowData } from '@/types'
 import { Sheet } from '@/models'
 import { SheetService, SectionService } from '@/services'
 
@@ -173,9 +173,9 @@ export function setChartLabelColumn(
 /**
  * Toggle row exclusion for all visible charts in section
  */
-export function toggleRowExclusion(sectionIndex: number, rowIndex: number): void {
+export function toggleRowExclusion(sectionIndex: number, row: RowData): void {
   updateSection(sectionIndex, section =>
-    SectionService.toggleRowExclusion(section, rowIndex)
+    SectionService.toggleRowExclusion(section, row)
   )
 }
 

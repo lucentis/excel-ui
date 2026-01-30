@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { SectionConfig, DataMatrix } from '@/types'
+import type { SectionConfig, DataMatrix, RowData } from '@/types'
 import { Section } from '@/models'
 import { ChartService } from '@/services'
 import {
@@ -21,7 +21,7 @@ const emit = defineEmits<{
   cellClick: [rowIndex: number, colIndex: number]
   headerClick: [colIndex: number]
   chartIconClick: [colIndex: number]
-  toggleRowExclusion: [rowIndex: number]
+  toggleRowExclusion: [row: RowData]
   sortClick: [colIndex: number]
 }>()
 
@@ -37,9 +37,9 @@ const hasVisibleCharts = computed(() => {
   return sectionModel.value.getVisibleCharts().length > 0
 })
 
-function isRowExcluded(rowIndex: number): boolean {
+function isRowExcluded(row: RowData): boolean {
   const visibleCharts = sectionModel.value.getVisibleCharts()
-  return visibleCharts.some(chart => chart.isRowExcluded(rowIndex))
+  return visibleCharts.some(chart => chart.isRowExcluded(row))
 }
 
 function getSelectedCell(): { row: number; col: number } | null {
@@ -74,10 +74,10 @@ function getSelectedCell(): { row: number; col: number } | null {
             :row="row"
             :row-index="rowIndex"
             :selected-cell="getSelectedCell()"
-            :is-excluded="isRowExcluded(rowIndex)"
+            :is-excluded="isRowExcluded(row)"
             :has-visible-charts="hasVisibleCharts"
             @cell-click="(colIndex) => emit('cellClick', rowIndex, colIndex)"
-            @toggle-exclusion="emit('toggleRowExclusion', rowIndex)"
+            @toggle-exclusion="emit('toggleRowExclusion', row)"
           />
         </TableBody>
       </Table>

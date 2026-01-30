@@ -2,7 +2,7 @@
  * Types relatifs aux graphiques
  */
 
-import type { ColumnIndex, RowIndex } from '../common/base'
+import type { ColumnIndex, RowData, RowIndex } from '../common/base'
 
 /**
  * Types de graphiques supportés
@@ -23,7 +23,7 @@ export interface ChartConfig {
   type: ChartType
   
   /** Lignes exclues du graphique */
-  excludedRows: RowIndex[]
+  excludedRows: RowData[]
   
   /** Visibilité du graphique */
   visible: boolean
