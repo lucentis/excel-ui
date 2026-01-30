@@ -77,19 +77,21 @@ describe('SectionService', () => {
   describe('toggleRowExclusion', () => {
     it('should exclude row from all visible charts', () => {
       const withChart = SectionService.toggleChart(mockSection, 1)
-      const updated = SectionService.toggleRowExclusion(withChart, 0)
+      const row = ['Product A', 100, 5]
+      const updated = SectionService.toggleRowExclusion(withChart, row)
       
       const chart = updated.getChart(1)
-      expect(chart?.isRowExcluded(0)).toBe(true)
+      expect(chart?.isRowExcluded(row)).toBe(true)
     })
 
     it('should toggle exclusion', () => {
       const withChart = SectionService.toggleChart(mockSection, 1)
-      const excluded = SectionService.toggleRowExclusion(withChart, 0)
-      const included = SectionService.toggleRowExclusion(excluded, 0)
+      const row = ['Product A', 100, 5]
+      const excluded = SectionService.toggleRowExclusion(withChart, row)
+      const included = SectionService.toggleRowExclusion(excluded, row)
       
-      expect(excluded.getChart(1)?.isRowExcluded(0)).toBe(true)
-      expect(included.getChart(1)?.isRowExcluded(0)).toBe(false)
+      expect(excluded.getChart(1)?.isRowExcluded(row)).toBe(true)
+      expect(included.getChart(1)?.isRowExcluded(row)).toBe(false)
     })
 
     it('should affect all visible charts', () => {
@@ -97,10 +99,11 @@ describe('SectionService', () => {
         .toggleChart(1)
         .toggleChart(2)
       
-      const updated = SectionService.toggleRowExclusion(withCharts, 0)
+      const row = ['Product A', 100, 5]
+      const updated = SectionService.toggleRowExclusion(withCharts, row)
       
-      expect(updated.getChart(1)?.isRowExcluded(0)).toBe(true)
-      expect(updated.getChart(2)?.isRowExcluded(0)).toBe(true)
+      expect(updated.getChart(1)?.isRowExcluded(row)).toBe(true)
+      expect(updated.getChart(2)?.isRowExcluded(row)).toBe(true)
     })
   })
 
@@ -153,6 +156,27 @@ describe('SectionService', () => {
       const cleared = SectionService.clearSort(sorted)
       
       expect(cleared.sortConfig).toBeUndefined()
+    })
+  })
+
+  describe('setApplyFiltersToCharts', () => {
+    it('should set applyFiltersToCharts to true', () => {
+      const updated = SectionService.setApplyFiltersToCharts(mockSection, true)
+      
+      expect(updated.applyFiltersToCharts).toBe(true)
+    })
+
+    it('should set applyFiltersToCharts to false', () => {
+      const updated = SectionService.setApplyFiltersToCharts(mockSection, false)
+      
+      expect(updated.applyFiltersToCharts).toBe(false)
+    })
+
+    it('should not mutate original', () => {
+      const updated = SectionService.setApplyFiltersToCharts(mockSection, false)
+      
+      expect(mockSection.applyFiltersToCharts).toBe(true) // Default
+      expect(updated.applyFiltersToCharts).toBe(false)
     })
   })
 })

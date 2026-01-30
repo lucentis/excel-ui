@@ -57,7 +57,7 @@ export class ChartService {
 
   /**
    * Prepare chart data from section
-   * Filters out excluded rows
+   * Applies filters if configured and calculates percentages
    */
   static prepareChartData(section: SectionConfig, chart: Chart): ChartData {
     let dataSource: DataMatrix
@@ -67,21 +67,27 @@ export class ChartService {
                             FilterService.hasActiveSort(section)
     
     if (shouldApplyFilters && hasActiveFilters) {
-      // Utiliser les données filtrées/triées
       dataSource = FilterService.applyFiltersAndSort(section)
     } else {
-      // Utiliser les données brutes
       dataSource = section.data
     }
     
-    // Préparer les points du chart
-    return dataSource.filter(item => !chart.excludedRows.includes(item))
+    // Filter excluded rows and prepare data points
+    const dataPoints = dataSource
+      .filter(row => !chart.excludedRows.includes(row))
       .map((row, index): ChartDataPoint => ({
         index,
         name: String(row[chart.labelColumnIndex] || ''),
         value: Number(row[chart.columnIndex]) || 0,
       }))
-      
+
+    // Calculate percentages
+    const total = dataPoints.reduce((sum, p) => sum + p.value, 0)
+    
+    return dataPoints.map(p => ({
+      ...p,
+      percentage: total > 0 ? (p.value / total) * 100 : 0
+    }))
   }
 
   /**

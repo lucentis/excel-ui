@@ -37,24 +37,13 @@ import {
 } from '@unovis/vue'
 import { Donut } from '@unovis/ts'
 
-const triggers = {
-  [Donut.selectors.segment]: (d: any ) => {
-    return `
-      <div style="display:flex; flex-direction:column; gap:4px">
-        <strong>${d.data.name}</strong>
-        <span>${d.data.value}</span>
-      </div>
-    `
-  }
-}
-
 const props = defineProps<{
   section: SectionConfig
   sectionIndex: number
   chart: ChartConfigType
 }>()
 
-// Convert to models for business logic
+const sectionModel = computed(() => Section.fromConfig(props.section))
 const chartModel = computed(() => Chart.fromConfig(props.chart))
 
 const chartData = computed(() => {
@@ -84,7 +73,27 @@ const chartConfig = computed(
     }) satisfies ChartConfig,
 )
 
-type ChartDataType = { index: number; name: string; value: number }
+type ChartDataType = { index: number; name: string; value: number; percentage?: number }
+
+// Tooltip for pie chart with percentage
+const pieTooltipTriggers = {
+  [Donut.selectors.segment]: (d: any) => {
+    const percentage = d.data.percentage?.toFixed(1) || '0.0'
+    return `
+      <div style="display:flex; flex-direction:column; gap:4px">
+        <strong>${d.data.name}</strong>
+        <span>${d.data.value} (${percentage}%)</span>
+      </div>
+    `
+  }
+}
+
+// Legend items with percentage for pie chart
+const pieLegendItems = computed(() => {
+  return chartData.value.map(item => ({
+    name: `${item.name} (${item.percentage?.toFixed(1)}%)`
+  }))
+})
 
 function handleTypeChange(type: 'bar' | 'pie' | 'line') {
   setChartType(props.sectionIndex, props.chart.columnIndex, type)
@@ -200,7 +209,7 @@ function handleHideChart() {
       </VisXYContainer>
     </ChartContainer>
 
-    <!-- Pie Chart -->
+    <!-- Pie Chart with percentage -->
     <ChartContainer
       v-else-if="chart.type === 'pie'"
       :config="chartConfig"
@@ -208,11 +217,11 @@ function handleHideChart() {
       class="h-[150px] w-80"
     >
       <VisSingleContainer :data="chartData" :width="150" class="flex! items-center gap-4">
-        <VisTooltip :triggers="triggers" />
+        <VisTooltip :triggers="pieTooltipTriggers" />
         
         <VisBulletLegend 
-        :items="chartData.map(item => ({name: item.name}))"
-        orientation="vertical"
+          :items="pieLegendItems"
+          orientation="vertical"
         />
 
         <VisDonut :value="(d: ChartDataType) => d.value" :arc-width="50"/>

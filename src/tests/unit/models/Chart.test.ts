@@ -101,47 +101,52 @@ describe('Chart Model', () => {
   })
 
   describe('Row exclusion operations', () => {
+    const row1 = ['Product A', 100]
+    const row2 = ['Product B', 200]
+    const row3 = ['Product C', 150]
+
     it('should exclude row', () => {
       const chart = Chart.fromConfig(mockConfig)
-      const updated = chart.excludeRow(1)
+      const updated = chart.excludeRow(row1)
       
-      expect(updated.excludedRows).toContain(1)
+      expect(updated.excludedRows).toContain(row1)
     })
 
     it('should not duplicate excluded row', () => {
       const chart = Chart.fromConfig(mockConfig)
-      const updated = chart.excludeRow(1).excludeRow(1)
+      const updated = chart.excludeRow(row1).excludeRow(row1)
       
-      expect(updated.excludedRows).toEqual([1])
+      expect(updated.excludedRows).toHaveLength(1)
+      expect(updated.excludedRows[0]).toBe(row1)
     })
 
     it('should include row', () => {
       const chart = Chart.fromConfig({
         ...mockConfig,
-        excludedRows: [1, 2],
+        excludedRows: [row1, row2],
       })
-      const updated = chart.includeRow(1)
+      const updated = chart.includeRow(row1)
       
-      expect(updated.excludedRows).not.toContain(1)
-      expect(updated.excludedRows).toContain(2)
+      expect(updated.excludedRows).not.toContain(row1)
+      expect(updated.excludedRows).toContain(row2)
     })
 
     it('should toggle row exclusion', () => {
       const chart = Chart.fromConfig(mockConfig)
       
       // Exclude
-      const excluded = chart.toggleRowExclusion(1)
-      expect(excluded.isRowExcluded(1)).toBe(true)
+      const excluded = chart.toggleRowExclusion(row1)
+      expect(excluded.isRowExcluded(row1)).toBe(true)
       
       // Include
-      const included = excluded.toggleRowExclusion(1)
-      expect(included.isRowExcluded(1)).toBe(false)
+      const included = excluded.toggleRowExclusion(row1)
+      expect(included.isRowExcluded(row1)).toBe(false)
     })
 
     it('should clear all excluded rows', () => {
       const chart = Chart.fromConfig({
         ...mockConfig,
-        excludedRows: [1, 2, 3],
+        excludedRows: [row1, row2, row3],
       })
       const cleared = chart.clearExcludedRows()
       
@@ -150,22 +155,26 @@ describe('Chart Model', () => {
   })
 
   describe('Query methods', () => {
+    const row1 = ['Product A', 100]
+    const row2 = ['Product B', 200]
+    const row3 = ['Product C', 150]
+
     it('should check if row is excluded', () => {
       const chart = Chart.fromConfig({
         ...mockConfig,
-        excludedRows: [1, 3],
+        excludedRows: [row1, row3],
       })
       
-      expect(chart.isRowExcluded(1)).toBe(true)
-      expect(chart.isRowExcluded(2)).toBe(false)
-      expect(chart.isRowExcluded(3)).toBe(true)
+      expect(chart.isRowExcluded(row1)).toBe(true)
+      expect(chart.isRowExcluded(row2)).toBe(false)
+      expect(chart.isRowExcluded(row3)).toBe(true)
     })
 
     it('should check if has excluded rows', () => {
       const noExclusions = Chart.fromConfig(mockConfig)
       const withExclusions = Chart.fromConfig({
         ...mockConfig,
-        excludedRows: [1],
+        excludedRows: [row1],
       })
       
       expect(noExclusions.hasExcludedRows()).toBe(false)
@@ -175,7 +184,7 @@ describe('Chart Model', () => {
     it('should get excluded row count', () => {
       const chart = Chart.fromConfig({
         ...mockConfig,
-        excludedRows: [1, 2, 3],
+        excludedRows: [row1, row2, row3],
       })
       
       expect(chart.getExcludedRowCount()).toBe(3)
@@ -183,6 +192,8 @@ describe('Chart Model', () => {
   })
 
   describe('Serialization', () => {
+    const row1 = ['Product A', 100]
+
     it('should convert to config', () => {
       const chart = Chart.fromConfig(mockConfig)
       const config = chart.toConfig()
@@ -195,6 +206,17 @@ describe('Chart Model', () => {
       const json = chart.toJSON()
       
       expect(json).toEqual(mockConfig)
+    })
+
+    it('should preserve excluded rows in serialization', () => {
+      const chart = Chart.fromConfig({
+        ...mockConfig,
+        excludedRows: [row1],
+      })
+      const config = chart.toConfig()
+      
+      expect(config.excludedRows).toHaveLength(1)
+      expect(config.excludedRows[0]).toBe(row1)
     })
   })
 })

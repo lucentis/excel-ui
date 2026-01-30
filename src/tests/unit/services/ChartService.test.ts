@@ -67,9 +67,10 @@ describe('ChartService', () => {
     })
 
     it('should exclude rows based on excludedRows', () => {
+      const rowToExclude = mockSection.data[1]
       const chartWithExclusion: ChartConfig = {
         ...chartConfig,
-        excludedRows: [1], // Exclude Product B
+        excludedRows: [rowToExclude!],
       }
       const chart = Chart.fromConfig(chartWithExclusion)
       const result = ChartService.prepareChartData(mockSection, chart)
@@ -93,6 +94,50 @@ describe('ChartService', () => {
       expect(result[0]!.value).toBe(0)
       expect(result[1]!.value).toBe(0)
       expect(result[2]!.value).toBe(100)
+    })
+
+    it('should apply filters when applyFiltersToCharts is true', () => {
+      const sectionWithSearch: SectionConfig = {
+        ...mockSection,
+        searchText: 'Product A',
+        applyFiltersToCharts: true,
+      }
+      const chart = Chart.fromConfig(chartConfig)
+      const result = ChartService.prepareChartData(sectionWithSearch, chart)
+
+      expect(result).toHaveLength(1)
+      expect(result[0]!.name).toBe('Product A')
+    })
+
+    it('should not apply filters when applyFiltersToCharts is false', () => {
+      const sectionWithSearch: SectionConfig = {
+        ...mockSection,
+        searchText: 'Product A',
+        applyFiltersToCharts: false,
+      }
+      const chart = Chart.fromConfig(chartConfig)
+      const result = ChartService.prepareChartData(sectionWithSearch, chart)
+
+      expect(result).toHaveLength(3) // All data, not filtered
+    })
+
+    it('should combine filters and exclusions correctly', () => {
+      const rowToExclude = mockSection.data[0]
+      const sectionWithFilters: SectionConfig = {
+        ...mockSection,
+        searchText: 'Product',
+        applyFiltersToCharts: true,
+      }
+      const chartWithExclusion = Chart.fromConfig({
+        ...chartConfig,
+        excludedRows: [rowToExclude!],
+      })
+      const result = ChartService.prepareChartData(sectionWithFilters, chartWithExclusion)
+
+      // All match search, but Product A is excluded
+      expect(result).toHaveLength(2)
+      expect(result[0]!.name).toBe('Product B')
+      expect(result[1]!.name).toBe('Product C')
     })
   })
 
@@ -188,23 +233,26 @@ describe('ChartService', () => {
         excludedRows: [],
         visible: true,
       })
-      const updated = ChartService.toggleRowExclusion(chart, 1)
+      const row = ['Product A', 100, 5, 'Paris']
+      const updated = ChartService.toggleRowExclusion(chart, row)
       
-      expect(updated.excludedRows).toContain(1)
+      expect(updated.excludedRows).toContain(row)
     })
 
     it('should remove row from exclusion list if already excluded', () => {
+      const row1 = ['Product A', 100, 5, 'Paris']
+      const row2 = ['Product B', 200, 10, 'London']
       const chart = Chart.fromConfig({
         columnIndex: 0,
         labelColumnIndex: 0,
         type: 'bar',
-        excludedRows: [1, 2],
+        excludedRows: [row1, row2],
         visible: true,
       })
-      const updated = ChartService.toggleRowExclusion(chart, 1)
+      const updated = ChartService.toggleRowExclusion(chart, row1)
       
-      expect(updated.excludedRows).not.toContain(1)
-      expect(updated.excludedRows).toContain(2)
+      expect(updated.excludedRows).not.toContain(row1)
+      expect(updated.excludedRows).toContain(row2)
     })
   })
 })

@@ -58,6 +58,9 @@ export interface ChartDataPoint {
   
   /** Valeur numérique */
   value: number
+  
+  /** Pourcentage (calculé automatiquement) */
+  percentage?: number
 }
 
 /**
