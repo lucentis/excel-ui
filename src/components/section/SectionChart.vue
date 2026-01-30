@@ -55,7 +55,6 @@ const props = defineProps<{
 }>()
 
 // Convert to models for business logic
-const sectionModel = computed(() => Section.fromConfig(props.section))
 const chartModel = computed(() => Chart.fromConfig(props.chart))
 
 const chartData = computed(() => {

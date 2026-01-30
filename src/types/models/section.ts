@@ -43,7 +43,9 @@ export interface SectionConfig {
   
   /** Sort configuration */
   sortConfig?: SortConfig
-  applyFiltersToCharts: boolean
+  
+  /** Apply filters to charts (default: true) */
+  applyFiltersToCharts?: boolean
 }
 
 /**

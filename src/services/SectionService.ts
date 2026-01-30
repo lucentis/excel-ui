@@ -109,4 +109,11 @@ export class SectionService {
   static clearSort(section: Section): Section {
     return section.clearSort()
   }
+
+  /**
+   * Set apply filters to charts
+   */
+  static setApplyFiltersToCharts(section: Section, apply: boolean): Section {
+    return section.withApplyFiltersToCharts(apply)
+  }
 }

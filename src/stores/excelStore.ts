@@ -51,15 +51,12 @@ export function setCurrentSheet(sheetName: string): void {
   }
 
   const worksheet = excelStore.workbook.getWorksheet(sheetName)
-
   if (!worksheet) return
 
   const sheet = SheetService.buildSheet(sheetName, worksheet)
 
-  const sheetConfig = sheet.toConfig()
-
-  excelStore.sheets[sheetName] = sheetConfig
-  excelStore.currentSheet = sheetConfig
+  excelStore.sheets[sheetName] = sheet.toConfig()
+  excelStore.currentSheet = sheet.toConfig()
 }
 
 /**
@@ -96,7 +93,6 @@ function updateSection(
   const updatedConfig = updatedSheet.toConfig()
 
   excelStore.sheets[updatedSheet.name] = updatedConfig
-
   excelStore.currentSheet = updatedConfig
 }
 
@@ -194,5 +190,14 @@ export function toggleColumnSort(sectionIndex: number, columnIndex: number): voi
 export function clearSort(sectionIndex: number): void {
   updateSection(sectionIndex, section =>
     SectionService.clearSort(section)
+  )
+}
+
+/**
+ * Set apply filters to charts for a section
+ */
+export function setApplyFiltersToCharts(sectionIndex: number, apply: boolean): void {
+  updateSection(sectionIndex, section =>
+    SectionService.setApplyFiltersToCharts(section, apply)
   )
 }
