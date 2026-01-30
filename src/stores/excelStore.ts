@@ -51,12 +51,15 @@ export function setCurrentSheet(sheetName: string): void {
   }
 
   const worksheet = excelStore.workbook.getWorksheet(sheetName)
+
   if (!worksheet) return
 
   const sheet = SheetService.buildSheet(sheetName, worksheet)
 
-  excelStore.sheets[sheetName] = sheet.toConfig()
-  excelStore.currentSheet = sheet.toConfig()
+  const sheetConfig = sheet.toConfig()
+
+  excelStore.sheets[sheetName] = sheetConfig
+  excelStore.currentSheet = sheetConfig
 }
 
 /**
@@ -66,6 +69,7 @@ export function clearWorkbook(): void {
   excelStore.workbook = null
   excelStore.fileName = ''
   excelStore.sheetNames = []
+  excelStore.sheets = {}
   excelStore.currentSheet = {
     name: '',
     worksheet: null,
@@ -89,9 +93,11 @@ function updateSection(
   const sheet = Sheet.fromConfig(excelStore.currentSheet)
   const updatedSheet = SheetService.updateSection(sheet, sectionIndex, updater)
 
-  excelStore.sheets[updatedSheet.name] = updatedSheet.toConfig()
+  const updatedConfig = updatedSheet.toConfig()
 
-  excelStore.currentSheet = updatedSheet.toConfig()
+  excelStore.sheets[updatedSheet.name] = updatedConfig
+
+  excelStore.currentSheet = updatedConfig
 }
 
 /**
