@@ -5,7 +5,6 @@ import type {
   ChartDataPoint,
   SectionConfig,
   ColumnIndex,
-  RowIndex,
   RowData,
   DataMatrix,
 } from '@/types'
@@ -23,7 +22,15 @@ export class ChartService {
     if (section.data.length === 0) return false
 
     const values = section.data.map(row => row[columnIndex])
-    const numericCount = values.filter(val => typeof val === 'number').length
+    
+    const numericCount = values.filter(val => {
+      if (typeof val === 'object' && val !== null) {
+        const v = val as { value?: unknown; result?: unknown }
+        return typeof v.value === 'number' || typeof v.result === 'number'
+      }
+
+      return typeof val === 'number'
+    }).length
 
     return values.length === numericCount
   }
