@@ -2,7 +2,7 @@
  * Types utilitaires de base
  */
 
-import type { Cell, CellErrorValue, CellFormulaValue, CellSharedFormulaValue, CellValue } from "exceljs"
+import type { CellValue } from "exceljs"
 
 /**
  * Identifiant unique

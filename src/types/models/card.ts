@@ -2,7 +2,8 @@
  * Types relatifs aux cartes récapitulatives
  */
 
-import type { CellValue, RowIndex, ColumnIndex } from '../common/base'
+import type { CellValue } from 'exceljs'
+import type { RowIndex, ColumnIndex } from '../common/base'
 
 /**
  * Configuration d'une carte récapitulative

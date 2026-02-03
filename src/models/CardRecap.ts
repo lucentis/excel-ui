@@ -1,9 +1,9 @@
 import type { 
     CardRecapConfig,
-    CellValue,
     RowIndex,
     ColumnIndex,
   } from '@/types'
+import type { CellValue } from 'exceljs'
   
   /**
    * CardRecap Model

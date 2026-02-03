@@ -22,10 +22,6 @@ export const excelStore = reactive<WorkbookConfig>({
   },
 })
 
-export const displayData = computed(() => {
-  return ExcelParser.parseRawData(excelStore.currentSheet.rawData)
-})
-
 // ============================================================================
 // Workbook Operations
 // ============================================================================

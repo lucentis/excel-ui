@@ -27,42 +27,10 @@ export class ExcelParser {
   }
 
   /**
-   * Parse cell value for display
-   */
-  static parseCell(cell: CellValue): CellValue {
-    if (!cell || typeof cell !== 'object' || !('value' in cell)) {
-      return cell
-    }
-
-    let value = (cell as any).value
-
-    if (value && typeof value === 'object') {
-      if ('result' in value) {
-        value = value.result
-      } else if ('richText' in value) {
-        value = value.richText.map((t: any) => t.text).join('')
-      } else if ('text' in value) {
-        value = value.text
-      }
-    }
-
-    return value
-  }
-
-  /**
-   * Parse entire data matrix
-   */
-  static parseRawData(rawData: DataMatrix): DataMatrix {
-    return rawData.map(row => 
-      row.map(cell => this.parseCell(cell))
-    )
-  }
-
-  /**
    * Check if a row is completely empty
    */
   static isEmptyRow(row: RowData): boolean {
-    return row.every(cell => cell === null || cell === undefined || cell === '')
+    return row.every(cell => cell === null || cell === undefined || (cell as any).value === '' || cell === '')
   }
 
   /**

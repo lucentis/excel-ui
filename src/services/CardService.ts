@@ -3,8 +3,8 @@ import type {
   SectionConfig,
   RowIndex,
   ColumnIndex,
-  CellValue,
 } from '@/types'
+import type { CellValue } from 'exceljs'
 
 /**
  * CardService
