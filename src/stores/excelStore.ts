@@ -1,8 +1,8 @@
-import { reactive } from 'vue'
+import { computed, reactive } from 'vue'
 import type { Workbook } from 'exceljs'
 import type { WorkbookConfig, ChartType, RowData } from '@/types'
 import { Sheet } from '@/models'
-import { SheetService, SectionService } from '@/services'
+import { SheetService, SectionService, ExcelParser } from '@/services'
 
 /**
  * Excel Store
@@ -20,6 +20,10 @@ export const excelStore = reactive<WorkbookConfig>({
     title: '',
     sections: [],
   },
+})
+
+export const displayData = computed(() => {
+  return ExcelParser.parseRawData(excelStore.currentSheet.rawData)
 })
 
 // ============================================================================

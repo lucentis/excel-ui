@@ -17,14 +17,6 @@ const emit = defineEmits<{
   toggleExclusion: []
 }>()
 
-function formatCellValue(value: unknown): string {
-  if (value === null || value === undefined) return ''
-  if (typeof value === 'number') return value.toLocaleString('fr-FR')
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
-  if (value instanceof Date) return value.toLocaleDateString('fr-FR')
-  return String(value)
-}
-
 function isCellSelected(colIndex: number, selectedCell?: { row: number; col: number } | null): boolean {
   if (!selectedCell) return false
   return selectedCell.row === props.rowIndex && selectedCell.col === colIndex
@@ -70,7 +62,7 @@ function isCellSelected(colIndex: number, selectedCell?: { row: number; col: num
       @click="emit('cellClick', cellIndex)"
     >
       <div class="flex items-center gap-2">
-        {{ formatCellValue(cell) }}
+        {{ cell }}
         <Badge
           v-if="isCellSelected(cellIndex, selectedCell)"
           class="text-xs bg-sky-100"

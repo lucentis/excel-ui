@@ -1,4 +1,4 @@
-import type { Worksheet } from 'exceljs'
+import type { CellValue, Worksheet } from 'exceljs'
 import type { DataMatrix, RowData } from '@/types'
 
 /**
@@ -17,29 +17,45 @@ export class ExcelParser {
       const rowData: RowData = []
 
       row.eachCell({ includeEmpty: true }, (cell) => {
-        let value = cell.value
-
-        // Handle special ExcelJS types
-        if (value && typeof value === 'object') {
-          if ('result' in value) {
-            // Formula: take the result
-            value = value.result
-          } else if ('richText' in value) {
-            // Rich text: extract plain text
-            value = value.richText.map((t: any) => t.text).join('')
-          } else if ('text' in value) {
-            // Hyperlink: take the text
-            value = value.text
-          }
-        }
-
-        rowData.push(value)
+        rowData.push(cell)
       })
 
       data.push(rowData)
     })
 
     return data
+  }
+
+  /**
+   * Parse cell value for display
+   */
+  static parseCell(cell: CellValue): CellValue {
+    if (!cell || typeof cell !== 'object' || !('value' in cell)) {
+      return cell
+    }
+
+    let value = (cell as any).value
+
+    if (value && typeof value === 'object') {
+      if ('result' in value) {
+        value = value.result
+      } else if ('richText' in value) {
+        value = value.richText.map((t: any) => t.text).join('')
+      } else if ('text' in value) {
+        value = value.text
+      }
+    }
+
+    return value
+  }
+
+  /**
+   * Parse entire data matrix
+   */
+  static parseRawData(rawData: DataMatrix): DataMatrix {
+    return rawData.map(row => 
+      row.map(cell => this.parseCell(cell))
+    )
   }
 
   /**
