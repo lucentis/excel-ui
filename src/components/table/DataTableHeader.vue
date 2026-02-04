@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { TableHead, TableRow } from '@/components/ui/table'
 import type { RowData, SortConfig } from '@/types'
 
-defineProps<{
+const props = defineProps<{
   headers: RowData
   numericColumns: number[]
   selectedCell?: { row: number; col: number } | null
@@ -46,7 +46,7 @@ function getSortIcon(colIndex: number, sortConfig?: SortConfig) {
       <div class="flex items-center gap-4 group">
         <div 
           class="flex items-center gap-1 flex-1"
-          @click.stop="emit('sortClick', index)"
+          @click="props.hasDataRows ? emit('sortClick', index) : null"
         >
           {{ formatCellValue(header) || `Col ${index + 1}` }}
           
