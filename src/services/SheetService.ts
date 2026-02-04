@@ -13,7 +13,8 @@ export class SheetService {
    */
   static buildSheet(name: string, worksheet: Worksheet): Sheet {
     const rawData = ExcelParser.extractRawData(worksheet)
-    const title = String(rawData[0]?.[0] || '')
+    const title = (rawData[0]?.[0] as any)?.value || ''
+    
     const sectionConfigs = SectionDetector.detectSections(rawData)
     const sections = sectionConfigs.map(config => Section.fromConfig(config))
 

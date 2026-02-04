@@ -61,9 +61,9 @@ describe('ChartService', () => {
       const result = ChartService.prepareChartData(mockSection, chart)
 
       expect(result).toHaveLength(3)
-      expect(result[0]).toEqual({ index: 0, name: 'Product A', value: 100 })
-      expect(result[1]).toEqual({ index: 1, name: 'Product B', value: 200 })
-      expect(result[2]).toEqual({ index: 2, name: 'Product C', value: 150 })
+      expect(result[0]).toEqual({ index: 0, name: 'Product A', value: 100, percentage: expect.any(Number) })
+      expect(result[1]).toEqual({ index: 1, name: 'Product B', value: 200, percentage: expect.any(Number) })
+      expect(result[2]).toEqual({ index: 2, name: 'Product C', value: 150, percentage: expect.any(Number) })
     })
 
     it('should exclude rows based on excludedRows', () => {

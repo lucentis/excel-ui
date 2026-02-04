@@ -42,10 +42,9 @@ export class FilterService {
    */
   // services/FilterService.ts
   private static compareValues(a: CellValue, b: CellValue, direction: 'asc' | 'desc'): number {
+    let valueA = (a as any)?.result ?? (a as any)?.value ?? a
+    let valueB = (b as any)?.result ?? (b as any)?.value ?? b
     
-    let valueA = (a as any).result ?? (a as any).value
-    let valueB = (b as any).result ?? (b as any).value
-      
     // Handle null/undefined
     if (valueA === null || valueA === undefined) return direction === 'asc' ? 1 : -1
     if (valueB === null || valueB === undefined) return direction === 'asc' ? -1 : 1
