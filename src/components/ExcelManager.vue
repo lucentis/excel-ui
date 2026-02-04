@@ -3,6 +3,7 @@ import { excelStore } from '@/stores/excelStore'
 import ExcelImporter from './ExcelImporter.vue'
 import SheetViewer from './SheetViewer.vue'
 import ConfigPanel from './ConfigPanel.vue'
+import Panel from './panel/Panel.vue';
 </script>
 
 <template>
@@ -32,7 +33,8 @@ import ConfigPanel from './ConfigPanel.vue'
         </div>
 
         <!-- Right: Config Panel -->
-        <ConfigPanel v-if="excelStore.workbook" />
+        <!-- <ConfigPanel v-if="excelStore.workbook" /> -->
+         <Panel></Panel>
       </div>
     </div>
   </div>
