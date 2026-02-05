@@ -6,6 +6,93 @@ import type { CellValue } from 'exceljs'
 import type { RowIndex, ColumnIndex } from '../common/base'
 
 /**
+ * Color theme for card
+ */
+export type CardColorTheme = 
+  | 'slate' | 'neutral' | 'red' | 'orange' | 'amber' | 'yellow'
+  | 'lime' | 'green' | 'emerald' | 'teal' | 'cyan' | 'sky'
+  | 'blue' | 'indigo' | 'violet' | 'purple' | 'fuchsia' | 'pink' | 'rose'
+
+/**
+ * Card size options
+ */
+export type CardSize = 'small' | 'medium' | 'large'
+
+/**
+ * Icon position options
+ */
+export type CardIconPosition = 'top' | 'left' | 'right' | 'none'
+
+/**
+ * Typography size options
+ */
+export type CardTitleSize = 'small' | 'medium' | 'large'
+export type CardValueSize = 'small' | 'medium' | 'large' | 'xlarge'
+
+/**
+ * Value format options
+ */
+export type CardValueFormat = 'number' | 'integer' | 'percentage' | 'currency'
+
+/**
+ * Typography configuration
+ */
+export interface CardTypography {
+  /** Title text size */
+  titleSize: CardTitleSize
+  
+  /** Value text size */
+  valueSize: CardValueSize
+}
+
+/**
+ * Value format configuration
+ */
+export interface CardValueFormatConfig {
+  /** Format type */
+  type: CardValueFormat
+  
+  /** Custom unit for currency format */
+  customUnit?: string
+}
+
+/**
+ * Card style configuration
+ */
+export interface CardStyleConfig {
+  /** Color theme */
+  colorTheme: CardColorTheme
+  
+  /** Card size */
+  size: CardSize
+  
+  /** Icon position */
+  iconPosition: CardIconPosition
+  
+  /** Typography settings */
+  typography: CardTypography
+  
+  /** Value format settings */
+  valueFormat: CardValueFormatConfig
+}
+
+/**
+ * Default card style configuration
+ */
+export const DEFAULT_CARD_STYLE: CardStyleConfig = {
+  colorTheme: 'blue',
+  size: 'medium',
+  iconPosition: 'left',
+  typography: {
+    titleSize: 'medium',
+    valueSize: 'large',
+  },
+  valueFormat: {
+    type: 'number',
+  },
+}
+
+/**
  * Configuration d'une carte récapitulative
  */
 export interface CardRecapConfig {
@@ -29,6 +116,9 @@ export interface CardRecapConfig {
   
   /** Icône personnalisée */
   icon?: string
+  
+  /** Style configuration */
+  style?: CardStyleConfig
 }
 
 /**
@@ -41,6 +131,7 @@ export interface CreateCardRecapOptions {
   unit?: string
   color?: string
   icon?: string
+  style?: Partial<CardStyleConfig>
 }
 
 /**
@@ -67,6 +158,9 @@ export interface CardRecapDisplay {
   
   /** Icône */
   icon?: string
+  
+  /** Style configuration */
+  style: CardStyleConfig
 }
 
 /**

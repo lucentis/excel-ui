@@ -1,48 +1,23 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { excelStore } from '@/stores/excelStore'
+import { CardRecap } from '@/models'
+import { getColorTheme, getCardPaddingClass, getTitleSizeClass, getValueSizeClass } from '@/lib/cardTheme'
 
 const cardsData = computed(() => {
   return excelStore.currentSheet.sections
     .filter((section) => section.cardRecap)
-    .map((section) => ({
-      title: section.title || section.cardRecap?.label,
-      label: section.cardRecap?.label || 'Valeur',
-      value: section.cardRecap?.value,
-    }))
+    .map((section) => {
+      const cardRecap = CardRecap.fromConfig(section.cardRecap!)
+      return {
+        title: section.title || section.cardRecap?.label,
+        label: section.cardRecap?.label || 'Valeur',
+        value: cardRecap.value,
+        formattedValue: cardRecap.formatValue(),
+        style: cardRecap.style,
+      }
+    })
 })
-
-function formatValue(value: unknown): string {
-  if (value === null || value === undefined) return '-'
-  if (typeof value === 'number') {
-    return new Intl.NumberFormat('fr-FR', {
-      maximumFractionDigits: 2,
-    }).format(value)
-  }
-  return String(value)
-}
-
-// Couleurs par index pour varier
-const cardColors = [
-  { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-900', accent: 'bg-blue-600' },
-  {
-    bg: 'bg-purple-50',
-    border: 'border-purple-200',
-    text: 'text-purple-900',
-    accent: 'bg-purple-600',
-  },
-  { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-900', accent: 'bg-green-600' },
-  {
-    bg: 'bg-orange-50',
-    border: 'border-orange-200',
-    text: 'text-orange-900',
-    accent: 'bg-orange-600',
-  },
-]
-
-function getCardColor(index: number) {
-  return cardColors[index % cardColors.length]
-}
 </script>
 
 <template>
@@ -54,19 +29,25 @@ function getCardColor(index: number) {
       v-for="(card, index) in cardsData"
       :key="index"
       :class="[
-        'p-4 rounded-lg border-2 transition-all hover:shadow-md flex justify-between',
-        getCardColor(index)?.bg,
-        getCardColor(index)?.border,
+        'rounded-lg border-2 transition-all hover:shadow-md flex justify-between',
+        getColorTheme(card.style.colorTheme).bg,
+        getColorTheme(card.style.colorTheme).border,
+        getCardPaddingClass(card.style.size),
       ]"
     >
-      <div class="">
-        <!-- Header -->
+      <div>
+        <!-- Header accent line -->
         <div class="flex items-center justify-between mb-3">
-          <div :class="['h-1 w-12 rounded', getCardColor(index)?.accent]"></div>
+          <div :class="['h-1 w-12 rounded', getColorTheme(card.style.colorTheme).accent]"></div>
         </div>
 
         <!-- Title -->
-        <div class="text-sm font-medium text-gray-600 mb-1">
+        <div 
+          :class="[
+            'font-medium text-gray-600 mb-1',
+            getTitleSizeClass(card.style.typography.titleSize)
+          ]"
+        >
           {{ card.title }}
         </div>
 
@@ -76,20 +57,26 @@ function getCardColor(index: number) {
         </div>
       </div>
 
-      <div class="">
+      <div>
         <!-- Value -->
-        <div :class="['text-3xl font-bold mb-1', getCardColor(index)?.text]">
-          {{ formatValue(card.value) }}
+        <div 
+          :class="[
+            'font-bold mb-1',
+            getColorTheme(card.style.colorTheme).text,
+            getValueSizeClass(card.style.typography.valueSize)
+          ]"
+        >
+          {{ card.formattedValue }}
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Message si pas de cards configurées -->
+  <!-- Message if no cards configured -->
   <div
     v-else
     class="mb-8 p-6 border-2 border-dashed border-gray-300 rounded-lg text-center text-gray-500"
   >
-    <p class="text-sm">📌 Cliquer sur une cellule pour créer une carte récapitulatif</p>
+    <p class="text-sm">📌 Click on a cell to create a recap card</p>
   </div>
 </template>

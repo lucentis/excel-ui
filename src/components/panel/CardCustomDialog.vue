@@ -1,6 +1,20 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { excelStore } from '@/stores/excelStore'
+import { excelStore, updateCardStyle } from '@/stores/excelStore'
+import { CardRecap } from '@/models'
+import type { CardStyleConfig } from '@/types'
+import {
+  COLOR_THEMES,
+  CARD_SIZE_OPTIONS,
+  CARD_ICON_POSITION_OPTIONS,
+  CARD_TITLE_SIZE_OPTIONS,
+  CARD_VALUE_SIZE_OPTIONS,
+  CARD_VALUE_FORMAT_OPTIONS,
+  getColorTheme,
+  getCardPaddingClass,
+  getTitleSizeClass,
+  getValueSizeClass,
+} from '@/lib/cardTheme'
 import {
   Dialog,
   DialogContent,
@@ -21,58 +35,47 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const COLOR_THEMES = [
-  { id: 'slate', label: 'Slate', bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-900', accent: 'bg-slate-600' },
-  { id: 'neutral', label: 'Neutral', bg: 'bg-neutral-50', border: 'border-neutral-200', text: 'text-neutral-900', accent: 'bg-neutral-600' },
-  { id: 'red', label: 'Red', bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900', accent: 'bg-red-600' },
-  { id: 'orange', label: 'Orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-900', accent: 'bg-orange-600' },
-  { id: 'amber', label: 'Amber', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-900', accent: 'bg-amber-600' },
-  { id: 'yellow', label: 'Yellow', bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-900', accent: 'bg-yellow-600' },
-  { id: 'lime', label: 'Lime', bg: 'bg-lime-50', border: 'border-lime-200', text: 'text-lime-900', accent: 'bg-lime-600' },
-  { id: 'green', label: 'Green', bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-900', accent: 'bg-green-600' },
-  { id: 'emerald', label: 'Emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-900', accent: 'bg-emerald-600' },
-  { id: 'teal', label: 'Teal', bg: 'bg-teal-50', border: 'border-teal-200', text: 'text-teal-900', accent: 'bg-teal-600' },
-  { id: 'cyan', label: 'Cyan', bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-900', accent: 'bg-cyan-600' },
-  { id: 'sky', label: 'Sky', bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-900', accent: 'bg-sky-600' },
-  { id: 'blue', label: 'Blue', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-900', accent: 'bg-blue-600' },
-  { id: 'indigo', label: 'Indigo', bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-900', accent: 'bg-indigo-600' },
-  { id: 'violet', label: 'Violet', bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-900', accent: 'bg-violet-600' },
-  { id: 'purple', label: 'Purple', bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-900', accent: 'bg-purple-600' },
-  { id: 'fuchsia', label: 'Fuchsia', bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', text: 'text-fuchsia-900', accent: 'bg-fuchsia-600' },
-  { id: 'pink', label: 'Pink', bg: 'bg-pink-50', border: 'border-pink-200', text: 'text-pink-900', accent: 'bg-pink-600' },
-  { id: 'rose', label: 'Rose', bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-900', accent: 'bg-rose-600' },
-]
-
-const SIZE_OPTIONS = ['small', 'medium', 'large'] as const
-const ICON_POSITION_OPTIONS = ['top', 'left', 'right', 'none'] as const
-const VALUE_FORMAT_OPTIONS = [
-  { id: 'number', label: 'Number' },
-  { id: 'integer', label: 'Integer' },
-  { id: 'percentage', label: '%' },
-  { id: 'currency', label: '€' },
-] as const
-const TITLE_SIZE_OPTIONS = ['small', 'medium', 'large'] as const
-const VALUE_SIZE_OPTIONS = ['small', 'medium', 'large', 'xlarge'] as const
-
-// Local state (no logic yet)
-const selectedTheme = ref('blue')
-const cardSize = ref<typeof SIZE_OPTIONS[number]>('medium')
-const iconPosition = ref<typeof ICON_POSITION_OPTIONS[number]>('left')
-const valueFormat = ref('number')
-const customUnit = ref('€')
-const titleSize = ref<typeof TITLE_SIZE_OPTIONS[number]>('medium')
-const valueSize = ref<typeof VALUE_SIZE_OPTIONS[number]>('large')
-
 const section = computed(() => {
   return excelStore.currentSheet.sections[props.sectionIndex]
+})
+
+const cardRecap = computed(() => {
+  return section.value?.cardRecap 
+    ? CardRecap.fromConfig(section.value.cardRecap)
+    : null
 })
 
 const cardTitle = computed(() => {
   return section.value?.title || `Section ${props.sectionIndex + 1}`
 })
 
-const currentTheme = computed(() => {
-  return COLOR_THEMES.find(t => t.id === selectedTheme.value) || COLOR_THEMES[0]
+// Local state initialized from card config
+const selectedTheme = ref(cardRecap.value?.style.colorTheme || 'blue')
+const cardSize = ref(cardRecap.value?.style.size || 'medium')
+const iconPosition = ref(cardRecap.value?.style.iconPosition || 'left')
+const titleSize = ref(cardRecap.value?.style.typography.titleSize || 'medium')
+const valueSize = ref(cardRecap.value?.style.typography.valueSize || 'large')
+const valueFormat = ref(cardRecap.value?.style.valueFormat.type || 'number')
+const customUnit = ref(cardRecap.value?.style.valueFormat.customUnit || '€')
+
+const currentTheme = computed(() => getColorTheme(selectedTheme.value))
+
+const previewValue = computed(() => {
+  if (!cardRecap.value) return '1,234'
+  
+  const value = cardRecap.value.value
+  if (typeof value !== 'number') return String(value)
+
+  switch (valueFormat.value) {
+    case 'integer':
+      return Math.round(value).toLocaleString('fr-FR')
+    case 'percentage':
+      return `${value.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}%`
+    case 'currency':
+      return `${value.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} ${customUnit.value}`
+    default:
+      return value.toLocaleString('fr-FR', { maximumFractionDigits: 2 })
+  }
 })
 
 function handleClose() {
@@ -80,7 +83,25 @@ function handleClose() {
 }
 
 function handleApply() {
-  // TODO: Apply changes
+  if (!cardRecap.value) return
+
+  const newStyle: CardStyleConfig = {
+    colorTheme: selectedTheme.value,
+    size: cardSize.value,
+    iconPosition: iconPosition.value,
+    typography: {
+      titleSize: titleSize.value,
+      valueSize: valueSize.value,
+    },
+    valueFormat: {
+      type: valueFormat.value,
+      customUnit: valueFormat.value === 'currency' ? customUnit.value : undefined,
+    },
+  }
+
+  updateCardStyle(props.sectionIndex, newStyle)
+  console.log('New style:', newStyle);
+  
   emit('close')
 }
 </script>
@@ -127,7 +148,7 @@ function handleApply() {
                 <Label class="text-xs text-gray-600">Size</Label>
                 <div class="flex gap-2">
                   <Button
-                    v-for="size in SIZE_OPTIONS"
+                    v-for="size in CARD_SIZE_OPTIONS"
                     :key="size"
                     @click="cardSize = size"
                     :variant="cardSize === size ? 'default' : 'outline'"
@@ -144,7 +165,7 @@ function handleApply() {
                 <Label class="text-xs text-gray-600">Icon Position</Label>
                 <div class="flex gap-2">
                   <Button
-                    v-for="position in ICON_POSITION_OPTIONS"
+                    v-for="position in CARD_ICON_POSITION_OPTIONS"
                     :key="position"
                     @click="iconPosition = position"
                     :variant="iconPosition === position ? 'default' : 'outline'"
@@ -167,7 +188,7 @@ function handleApply() {
                 <Label class="text-xs text-gray-600">Title Size</Label>
                 <div class="flex gap-2">
                   <Button
-                    v-for="size in TITLE_SIZE_OPTIONS"
+                    v-for="size in CARD_TITLE_SIZE_OPTIONS"
                     :key="size"
                     @click="titleSize = size"
                     :variant="titleSize === size ? 'default' : 'outline'"
@@ -184,7 +205,7 @@ function handleApply() {
                 <Label class="text-xs text-gray-600">Value Size</Label>
                 <div class="flex gap-2">
                   <Button
-                    v-for="size in VALUE_SIZE_OPTIONS"
+                    v-for="size in CARD_VALUE_SIZE_OPTIONS"
                     :key="size"
                     @click="valueSize = size"
                     :variant="valueSize === size ? 'default' : 'outline'"
@@ -203,7 +224,7 @@ function handleApply() {
             <Label>Value Format</Label>
             <div class="flex gap-2 flex-wrap">
               <Button
-                v-for="format in VALUE_FORMAT_OPTIONS"
+                v-for="format in CARD_VALUE_FORMAT_OPTIONS"
                 :key="format.id"
                 @click="valueFormat = format.id"
                 :variant="valueFormat === format.id ? 'default' : 'outline'"
@@ -224,17 +245,17 @@ function handleApply() {
             <Label>Preview</Label>
             <div
               :class="[
-                'p-4 rounded-lg border-2 transition-all flex justify-between',
-                currentTheme?.bg,
-                currentTheme?.border,
-                cardSize === 'small' ? 'p-3' : cardSize === 'large' ? 'p-6' : 'p-4',
+                'rounded-lg border-2 transition-all flex justify-between',
+                currentTheme.bg,
+                currentTheme.border,
+                getCardPaddingClass(cardSize),
               ]"
             >
               <div>
-                <div :class="['h-1 w-12 rounded mb-3', currentTheme?.accent]"></div>
+                <div :class="['h-1 w-12 rounded mb-3', currentTheme.accent]"></div>
                 <div :class="[
                   'font-medium mb-1',
-                  titleSize === 'small' ? 'text-xs' : titleSize === 'large' ? 'text-base' : 'text-sm'
+                  getTitleSizeClass(titleSize)
                 ]">
                   {{ section?.title || 'Card Title' }}
                 </div>
@@ -245,12 +266,10 @@ function handleApply() {
               <div>
                 <div :class="[
                   'font-bold mb-1',
-                  currentTheme?.text,
-                  valueSize === 'small' ? 'text-xl' : valueSize === 'medium' ? 'text-2xl' : valueSize === 'large' ? 'text-3xl' : 'text-4xl'
+                  currentTheme.text,
+                  getValueSizeClass(valueSize)
                 ]">
-                  1,234
-                  <span v-if="valueFormat === 'percentage'">%</span>
-                  <span v-if="valueFormat === 'currency'">{{ customUnit }}</span>
+                  {{ previewValue }}
                 </div>
               </div>
             </div>
@@ -261,7 +280,7 @@ function handleApply() {
           <Button variant="outline" @click="handleClose">Cancel</Button>
           <Button @click="handleApply">Apply</Button>
         </DialogFooter>
-        </div>
+      </div>
     </DialogContent>
   </Dialog>
 </template>

@@ -3,7 +3,9 @@ import type {
   SectionConfig,
   RowIndex,
   ColumnIndex,
+  CardStyleConfig,
 } from '@/types'
+import { DEFAULT_CARD_STYLE } from '@/types/models/card'
 import type { CellValue } from 'exceljs'
 
 /**
@@ -17,7 +19,8 @@ export class CardService {
   static createCardRecap(
     section: SectionConfig, 
     rowIndex: RowIndex, 
-    colIndex: ColumnIndex
+    colIndex: ColumnIndex,
+    style?: Partial<CardStyleConfig>
   ): CardRecap {
     // If no data rows, take value from header itself (single-line section)
     const value: CellValue = section.data.length > 0 
@@ -28,7 +31,34 @@ export class CardService {
       ? String(section.header[colIndex] || '') 
       : String(section.header[0] || '')
 
-    return CardRecap.create(rowIndex, colIndex, value, label)
+    const cardRecap = CardRecap.create(rowIndex, colIndex, value, label)
+
+    // Apply style if provided
+    if (style) {
+      return cardRecap.withStyle(style)
+    }
+
+    return cardRecap
+  }
+
+  /**
+   * Update card style configuration
+   */
+  static updateCardStyle(
+    cardRecap: CardRecap,
+    style: Partial<CardStyleConfig>
+  ): CardRecap {
+    return cardRecap.withStyle(style)
+  }
+
+  /**
+   * Update full card style configuration
+   */
+  static setCardStyle(
+    cardRecap: CardRecap,
+    style: CardStyleConfig
+  ): CardRecap {
+    return cardRecap.withFullStyle(style)
   }
 
   /**

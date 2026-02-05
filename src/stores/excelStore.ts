@@ -1,8 +1,8 @@
 import { computed, reactive } from 'vue'
 import type { Workbook } from 'exceljs'
-import type { WorkbookConfig, ChartType, RowData } from '@/types'
+import type { WorkbookConfig, ChartType, RowData, CardStyleConfig } from '@/types'
 import { Sheet } from '@/models'
-import { SheetService, SectionService, ExcelParser } from '@/services'
+import { SheetService, SectionService, ExcelParser, CardService } from '@/services'
 
 /**
  * Excel Store
@@ -107,6 +107,21 @@ export function setCardRecap(
   updateSection(sectionIndex, section =>
     SectionService.setCardRecap(section, rowIndex, colIndex)
   )
+}
+
+/**
+ * Update card style configuration
+ */
+export function updateCardStyle(
+  sectionIndex: number,
+  style: CardStyleConfig
+): void {
+  updateSection(sectionIndex, section => {
+    if (!section.cardRecap) return section
+    
+    const updatedCardRecap = CardService.setCardStyle(section.cardRecap, style)
+    return section.setCardRecap(updatedCardRecap)
+  })
 }
 
 /**
