@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { RowData, SectionConfig } from '@/types'
+import { Section } from '@/models'
 import { FilterService } from '@/services'
 import {
   setCardRecap,
@@ -8,6 +9,7 @@ import {
   toggleRowExclusion,
   toggleColumnSort,
 } from '@/stores/excelStore'
+import { getSectionColorTheme, getChartPositionClass } from '@/lib/sectionTheme'
 import SectionHeader from './SectionHeader.vue'
 import SectionTable from './SectionTable.vue'
 import SectionChartList from './SectionChartList.vue'
@@ -16,6 +18,8 @@ const props = defineProps<{
   section: SectionConfig
   sectionIndex: number
 }>()
+
+const sectionModel = computed(() => Section.fromConfig(props.section))
 
 const filteredData = computed(() => {
   return FilterService.applyFiltersAndSort(props.section)
@@ -52,7 +56,7 @@ function handleSortClick(colIndex: number) {
       :total-count="section.data.length"
     />
 
-    <div class="flex gap-4 items-start">
+    <div :class="['flex gap-4', getChartPositionClass(sectionModel.style.chartPosition)]">
       <SectionTable
         :section="section"
         :section-index="sectionIndex"

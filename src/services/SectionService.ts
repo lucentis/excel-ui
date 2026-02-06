@@ -6,6 +6,7 @@ import type {
   ColumnIndex,
   ChartType,
   RowData,
+  SectionStyleConfig,
 } from '@/types'
 
 /**
@@ -115,5 +116,25 @@ export class SectionService {
    */
   static setApplyFiltersToCharts(section: Section, apply: boolean): Section {
     return section.withApplyFiltersToCharts(apply)
+  }
+
+  /**
+   * Update section style configuration
+   */
+  static updateSectionStyle(
+    section: Section,
+    style: Partial<SectionStyleConfig>
+  ): Section {
+    return section.withStyle(style)
+  }
+
+  /**
+   * Set full section style configuration
+   */
+  static setSectionStyle(
+    section: Section,
+    style: SectionStyleConfig
+  ): Section {
+    return section.withFullStyle(style)
   }
 }

@@ -1,6 +1,7 @@
 import type { 
   SectionConfig,
   SectionMetadata,
+  SectionStyleConfig,
   ColumnInfo,
   DataMatrix,
   RowData,
@@ -8,6 +9,7 @@ import type {
   SortConfig,
   SortDirection,
 } from '@/types'
+import { DEFAULT_SECTION_STYLE } from '@/types/models/section'
 import { Chart } from './Chart'
 import { CardRecap } from './CardRecap'
 
@@ -29,11 +31,15 @@ export class Section {
       data,
       charts: [],
       applyFiltersToCharts: true,
+      style: DEFAULT_SECTION_STYLE,
     })
   }
 
   static fromConfig(config: SectionConfig): Section {
-    return new Section({ ...config })
+    return new Section({ 
+      ...config,
+      style: config.style || DEFAULT_SECTION_STYLE,
+    })
   }
 
   // ============================================================================
@@ -72,6 +78,10 @@ export class Section {
     return this.config.applyFiltersToCharts ?? true
   }
 
+  get style(): SectionStyleConfig {
+    return this.config.style || DEFAULT_SECTION_STYLE
+  }
+
   // ============================================================================
   // Business logic
   // ============================================================================
@@ -93,6 +103,17 @@ export class Section {
 
   withApplyFiltersToCharts(apply: boolean): Section {
     return new Section({ ...this.config, applyFiltersToCharts: apply })
+  }
+
+  withStyle(style: Partial<SectionStyleConfig>): Section {
+    return new Section({ 
+      ...this.config, 
+      style: { ...this.style, ...style }
+    })
+  }
+
+  withFullStyle(style: SectionStyleConfig): Section {
+    return new Section({ ...this.config, style })
   }
 
   clearSearch(): Section {

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import type { SectionConfig, DataMatrix, RowData } from '@/types'
 import { Section } from '@/models'
 import { ChartService } from '@/services'
+import { getSectionColorTheme, getTableBorderClass } from '@/lib/sectionTheme'
 import {
   Table,
   TableBody,
@@ -37,6 +38,13 @@ const hasVisibleCharts = computed(() => {
   return sectionModel.value.getVisibleCharts().length > 0
 })
 
+const colorTheme = computed(() => getSectionColorTheme(sectionModel.value.style.colorTheme))
+
+const tableClasses = computed(() => {
+  const style = sectionModel.value.style.tableStyle
+  return getTableBorderClass(style.showBorders, style.roundedBorders)
+})
+
 function isRowExcluded(row: RowData): boolean {
   const visibleCharts = sectionModel.value.getVisibleCharts()
   return visibleCharts.some(chart => chart.isRowExcluded(row))
@@ -52,16 +60,17 @@ function getSelectedCell(): { row: number; col: number } | null {
 </script>
 
 <template>
-  <div class="border rounded-lg overflow-hidden grow">
+  <div :class="['overflow-hidden grow', tableClasses]">
     <div class="overflow-auto max-h-[400px]">
       <Table>
-        <TableHeader>
+        <TableHeader :class="[colorTheme.bg]">
           <DataTableHeader
             :headers="section.header"
             :numeric-columns="numericColumns"
             :selected-cell="getSelectedCell()"
             :has-data-rows="section.data.length > 0"
             :sort-config="section.sortConfig"
+            :color-theme="colorTheme"
             @header-click="(colIndex) => emit('headerClick', colIndex)"
             @chart-icon-click="(colIndex) => emit('chartIconClick', colIndex)"
             @sort-click="(colIndex) => emit('sortClick', colIndex)"
@@ -76,6 +85,7 @@ function getSelectedCell(): { row: number; col: number } | null {
             :selected-cell="getSelectedCell()"
             :is-excluded="isRowExcluded(row)"
             :has-visible-charts="hasVisibleCharts"
+            :alternating-rows="sectionModel.style.tableStyle.alternatingRows"
             @cell-click="(colIndex) => emit('cellClick', rowIndex, colIndex)"
             @toggle-exclusion="emit('toggleRowExclusion', row)"
           />

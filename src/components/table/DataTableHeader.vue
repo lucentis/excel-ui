@@ -3,6 +3,7 @@ import { ArrowUp, ArrowDown, BarChart3 } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import { TableHead, TableRow } from '@/components/ui/table'
 import type { RowData, SortConfig } from '@/types'
+import type { SectionColorThemeDefinition } from '@/lib/sectionTheme'
 
 const props = defineProps<{
   headers: RowData
@@ -10,6 +11,7 @@ const props = defineProps<{
   selectedCell?: { row: number; col: number } | null
   hasDataRows: boolean
   sortConfig?: SortConfig
+  colorTheme?: SectionColorThemeDefinition
 }>()
 
 const emit = defineEmits<{
@@ -31,15 +33,16 @@ function getSortIcon(colIndex: number, sortConfig?: SortConfig) {
 
 <template>
   <TableRow>
-    <TableHead class="w-12 bg-gray-50 sticky left-0 z-10">#</TableHead>
+    <TableHead class="w-12 sticky left-0 z-10 border-r" :class="[colorTheme?.text, colorTheme?.border]">#</TableHead>
     <TableHead
       v-for="(header, index) in headers"
       :key="index"
-      class="min-w-[150px] cursor-pointer hover:bg-gray-100"
       :class="[
+        'min-w-[150px] cursor-pointer hover:bg-gray-100',
         selectedCell?.row === 0 && selectedCell?.col === index && !hasDataRows
           ? 'bg-blue-100'
           : '',
+        colorTheme?.text,
       ]"
       @click="emit('headerClick', index)"
     >

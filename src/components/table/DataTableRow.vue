@@ -10,6 +10,7 @@ const props = defineProps<{
   selectedCell?: { row: number; col: number } | null
   isExcluded: boolean
   hasVisibleCharts: boolean
+  alternatingRows?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -24,7 +25,12 @@ function isCellSelected(colIndex: number, selectedCell?: { row: number; col: num
 </script>
 
 <template>
-  <TableRow class="group">
+  <TableRow 
+    :class="[
+      'group',
+      alternatingRows && rowIndex % 2 === 1 ? 'bg-gray-50' : '',
+    ]"
+  >
     <TableCell class="bg-gray-50 font-medium sticky left-0 z-10">
       <div class="flex items-center gap-2">
         {{ rowIndex + 1 }}

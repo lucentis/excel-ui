@@ -6,6 +6,7 @@ import { setApplyFiltersToCharts } from '@/stores/excelStore'
 import SearchBar from '@/components/SearchBar.vue'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { getSectionColorTheme, getSectionTitleSizeClass } from '@/lib/sectionTheme'
 
 const props = defineProps<{
   section: SectionConfig
@@ -15,6 +16,8 @@ const props = defineProps<{
 }>()
 
 const sectionModel = computed(() => Section.fromConfig(props.section))
+
+const colorTheme = computed(() => getSectionColorTheme(sectionModel.value.style.colorTheme))
 
 const hasVisibleCharts = computed(() => {
   return sectionModel.value.getVisibleCharts().length > 0
@@ -36,10 +39,10 @@ const applyFiltersToCharts = computed({
 
 <template>
   <div class="flex items-center justify-between gap-4 mb-3">
-    <!-- Section title -->
-    <div v-if="section.title" class="flex items-center gap-2">
-      <div class="h-1 w-8 bg-blue-600 rounded"></div>
-      <h3 class="text-xl font-semibold text-gray-900">
+    <!-- Section header with title and accent line -->
+    <div v-if="section.title" class="flex items-center gap-3">
+      <div :class="['h-1 w-8 rounded', colorTheme.accent]"></div>
+      <h3 :class="['font-semibold text-gray-900', getSectionTitleSizeClass(sectionModel.style.titleSize)]">
         {{ section.title }}
       </h3>
     </div>

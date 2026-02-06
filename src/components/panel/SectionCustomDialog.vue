@@ -1,6 +1,17 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { excelStore } from '@/stores/excelStore'
+import { excelStore, updateSectionStyle } from '@/stores/excelStore'
+import { Section } from '@/models'
+import type { SectionStyleConfig } from '@/types'
+import {
+  SECTION_COLOR_THEMES,
+  SECTION_TITLE_SIZE_OPTIONS,
+  CHART_POSITION_OPTIONS,
+  getSectionColorTheme,
+  getSectionTitleSizeClass,
+  getChartPositionClass,
+  getTableBorderClass,
+} from '@/lib/sectionTheme'
 import {
   Dialog,
   DialogContent,
@@ -26,56 +37,30 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const COLOR_THEMES = [
-  { id: 'slate', label: 'Slate', bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-900', accent: 'bg-slate-600' },
-  { id: 'neutral', label: 'Neutral', bg: 'bg-neutral-50', border: 'border-neutral-200', text: 'text-neutral-900', accent: 'bg-neutral-600' },
-  { id: 'red', label: 'Red', bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900', accent: 'bg-red-600' },
-  { id: 'orange', label: 'Orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-900', accent: 'bg-orange-600' },
-  { id: 'amber', label: 'Amber', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-900', accent: 'bg-amber-600' },
-  { id: 'yellow', label: 'Yellow', bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-900', accent: 'bg-yellow-600' },
-  { id: 'lime', label: 'Lime', bg: 'bg-lime-50', border: 'border-lime-200', text: 'text-lime-900', accent: 'bg-lime-600' },
-  { id: 'green', label: 'Green', bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-900', accent: 'bg-green-600' },
-  { id: 'emerald', label: 'Emerald', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-900', accent: 'bg-emerald-600' },
-  { id: 'teal', label: 'Teal', bg: 'bg-teal-50', border: 'border-teal-200', text: 'text-teal-900', accent: 'bg-teal-600' },
-  { id: 'cyan', label: 'Cyan', bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-900', accent: 'bg-cyan-600' },
-  { id: 'sky', label: 'Sky', bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-900', accent: 'bg-sky-600' },
-  { id: 'blue', label: 'Blue', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-900', accent: 'bg-blue-600' },
-  { id: 'indigo', label: 'Indigo', bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-900', accent: 'bg-indigo-600' },
-  { id: 'violet', label: 'Violet', bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-900', accent: 'bg-violet-600' },
-  { id: 'purple', label: 'Purple', bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-900', accent: 'bg-purple-600' },
-  { id: 'fuchsia', label: 'Fuchsia', bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', text: 'text-fuchsia-900', accent: 'bg-fuchsia-600' },
-  { id: 'pink', label: 'Pink', bg: 'bg-pink-50', border: 'border-pink-200', text: 'text-pink-900', accent: 'bg-pink-600' },
-  { id: 'rose', label: 'Rose', bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-900', accent: 'bg-rose-600' },
-]
-
-const TITLE_SIZE_OPTIONS = ['large', 'xlarge', '2xlarge'] as const
-const CHART_POSITION_OPTIONS = ['right', 'left', 'bottom', 'top'] as const
-
-// Local state (no logic yet)
-const selectedTheme = ref('blue')
-const titleSize = ref<typeof TITLE_SIZE_OPTIONS[number]>('xlarge')
-const roundedBorders = ref(true)
-const tableBorder = ref(true)
-const alternatingRows = ref(true)
-const chartPosition = ref<typeof CHART_POSITION_OPTIONS[number]>('left')
-
-const chartPositionClass = {
-  right:'flex-row-reverse items-start',
-  left:'flex-row items-start',
-  bottom:'flex-col',
-  top:'flex-col-reverse',
-}
-
 const section = computed(() => {
   return excelStore.currentSheet.sections[props.sectionIndex]
+})
+
+const sectionModel = computed(() => {
+  return section.value ? Section.fromConfig(section.value) : null
 })
 
 const sectionTitle = computed(() => {
   return section.value?.title || `Section ${props.sectionIndex + 1}`
 })
 
-const currentTheme = computed(() => {
-  return COLOR_THEMES.find(t => t.id === selectedTheme.value) || COLOR_THEMES[0]
+// Local state initialized from section config
+const selectedTheme = ref(sectionModel.value?.style.colorTheme || 'blue')
+const titleSize = ref(sectionModel.value?.style.titleSize || 'xlarge')
+const roundedBorders = ref(sectionModel.value?.style.tableStyle.roundedBorders ?? true)
+const tableBorder = ref(sectionModel.value?.style.tableStyle.showBorders ?? true)
+const alternatingRows = ref(sectionModel.value?.style.tableStyle.alternatingRows ?? true)
+const chartPosition = ref(sectionModel.value?.style.chartPosition || 'right')
+
+const currentTheme = computed(() => getSectionColorTheme(selectedTheme.value))
+
+const tableClasses = computed(() => {
+  return getTableBorderClass(tableBorder.value, roundedBorders.value)
 })
 
 function handleClose() {
@@ -83,11 +68,27 @@ function handleClose() {
 }
 
 function handleApply() {
-  // TODO: Apply changes
+  const newStyle: SectionStyleConfig = {
+    colorTheme: selectedTheme.value,
+    titleSize: titleSize.value,
+    tableStyle: {
+      showBorders: tableBorder.value,
+      roundedBorders: roundedBorders.value,
+      alternatingRows: alternatingRows.value,
+    },
+    chartPosition: chartPosition.value,
+  }
+
+  updateSectionStyle(props.sectionIndex, newStyle)
   emit('close')
 }
 
-// Tooltip for pie chart with percentage
+// Mock data for preview
+const chartData = ref([
+  { index: 1, name: 'Item 1', value: 100, percentage: 33.3 },
+  { index: 2, name: 'Item 2', value: 200, percentage: 66.6 },
+])
+
 const pieTooltipTriggers = {
   [Donut.selectors.segment]: (d: any) => {
     const percentage = d.data.percentage?.toFixed(1) || '0.0'
@@ -100,12 +101,6 @@ const pieTooltipTriggers = {
   }
 }
 
-const chartData = ref([
-  {index: 1, name: 'Item 1', value: 100, percentage: 33.3},
-  {index: 2, name: 'Item 2', value: 200, percentage: 66.6},
-])
-
-// Legend items with percentage for pie chart
 const pieLegendItems = computed(() => {
   return chartData.value.map(item => ({
     name: `${item.name} (${item.percentage?.toFixed(1)}%)`
@@ -114,7 +109,7 @@ const pieLegendItems = computed(() => {
 
 const chartConfig = {
   value: {
-    label: 'ok',
+    label: 'Value',
     color: '#bada55',
   },
 } satisfies ChartConfig
@@ -137,7 +132,7 @@ const chartConfig = {
             <Label>Color Theme</Label>
             <div class="grid grid-cols-12 gap-2">
               <button
-                v-for="theme in COLOR_THEMES"
+                v-for="theme in SECTION_COLOR_THEMES"
                 :key="theme.id"
                 @click="selectedTheme = theme.id"
                 :class="[
@@ -161,7 +156,7 @@ const chartConfig = {
               <Label class="text-xs text-gray-600">Title Size</Label>
               <div class="flex gap-2">
                 <Button
-                  v-for="size in TITLE_SIZE_OPTIONS"
+                  v-for="size in SECTION_TITLE_SIZE_OPTIONS"
                   :key="size"
                   @click="titleSize = size"
                   :variant="titleSize === size ? 'default' : 'outline'"
@@ -190,8 +185,6 @@ const chartConfig = {
                   <Switch id="alternating-rows" v-model="alternatingRows" />
                 </div>
               </div>
-
-              
             </div>
           </div>
 
@@ -225,20 +218,20 @@ const chartConfig = {
             <div class="border rounded-lg p-4 bg-white">
               <!-- Header preview -->
               <div class="flex items-center gap-3 mb-3">
-                <div :class="['h-1 w-8 rounded', currentTheme?.accent]"></div>
+                <div :class="['h-1 w-8 rounded', currentTheme.accent]"></div>
                 <h3 :class="[
                   'font-semibold',
-                  titleSize === 'large' ? 'text-lg' : titleSize === '2xlarge' ? 'text-2xl' : 'text-xl'
+                  getSectionTitleSizeClass(titleSize)
                 ]">
                   {{ sectionTitle }}
                 </h3>
               </div>
 
-              <!-- Table preview -->
-               <div class="flex gap-4" :class="[chartPositionClass[chartPosition]]">
-                <div :class="['overflow-hidden grow', roundedBorders ? 'rounded-lg' : '', tableBorder ? 'border' : '']">
+              <!-- Table and chart preview -->
+              <div class="flex gap-4" :class="[getChartPositionClass(chartPosition)]">
+                <div :class="['overflow-hidden grow', tableClasses]">
                   <table class="w-full text-sm">
-                    <thead :class="[currentTheme?.bg, currentTheme?.text]">
+                    <thead :class="[currentTheme.bg, currentTheme.text]">
                       <tr>
                         <th class="px-2 py-1.5 text-left font-medium">Name</th>
                         <th class="px-2 py-1.5 text-left font-medium">Value</th>
@@ -258,84 +251,75 @@ const chartConfig = {
                 </div>
 
                 <div class="p-4 border rounded-lg bg-white">
-                    <!-- Header -->
-                    <div class="flex items-center justify-between mb-2">
-                      <div class="flex items-center gap-2">
-                        <BarChart3 class="w-5 h-5 text-blue-600" />
-                        <h4 class="font-semibold text-gray-900">Chart title</h4>
-                      </div>
-                
-                      <div class="flex items-center gap-2">
-                        <!-- Type selector -->
-                        <DropdownMenu>
-                          <DropdownMenuTrigger as-child>
-                            <Button variant="outline" size="sm">
-                              <Settings2 class="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Chart type</DropdownMenuLabel>
-                            <DropdownMenuItem >
-                              <BarChart3 class="w-4 h-4 mr-2" />
-                              Bar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem >
-                              <PieChart class="w-4 h-4 mr-2" />
-                              Pie
-                            </DropdownMenuItem>
-                            <DropdownMenuItem >
-                              <LineChart class="w-4 h-4 mr-2" />
-                              Line
-                            </DropdownMenuItem>
-                            
-                            <DropdownMenuSeparator />
-                            
-                            <!-- Label column selector -->
-                            <DropdownMenuSub>
-                              <DropdownMenuSubTrigger>
-                                <Tag class="w-4 h-4 mr-2" />
-                                Labels: Some label
-                              </DropdownMenuSubTrigger>
-                              <DropdownMenuSubContent>
-                                <DropdownMenuItem
-                                  v-for="col in 3"
-                                  :key="col"
-                                >
-                                  {{ col + ' label'}}
-                                </DropdownMenuItem>
-                              </DropdownMenuSubContent>
-                            </DropdownMenuSub>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                
-                        <!-- Hide button -->
-                        <Button variant="ghost" size="sm" title="Hide chart">
-                          <EyeOff class="w-4 h-4" />
-                        </Button>
-                      </div>
+                  <!-- Header -->
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                      <BarChart3 class="w-5 h-5 text-blue-600" />
+                      <h4 class="font-semibold text-gray-900">Chart title</h4>
                     </div>
-                
-
-                
-                    <!-- Pie Chart with percentage -->
-                    <ChartContainer
-                      :config="chartConfig"
-                      class="h-[150px] w-80"
-                    >
-                      <VisSingleContainer :data="[
-                        {index: 1, name: 'Item 1', value: 100},
-                        {index: 2, name: 'Item 2', value: 200},
-                      ]" :width="150" class="flex! items-center gap-4">
-                        <VisTooltip :triggers="pieTooltipTriggers" />
-                        
-                        <VisBulletLegend 
-                          :items="pieLegendItems"
-                          orientation="vertical"
-                        />
-                
-                        <VisDonut :value="(d: any) => d.value" :arc-width="50"/>
-                      </VisSingleContainer>
-                    </ChartContainer>
+              
+                    <div class="flex items-center gap-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                          <Button variant="outline" size="sm">
+                            <Settings2 class="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Chart type</DropdownMenuLabel>
+                          <DropdownMenuItem>
+                            <BarChart3 class="w-4 h-4 mr-2" />
+                            Bar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <PieChart class="w-4 h-4 mr-2" />
+                            Pie
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <LineChart class="w-4 h-4 mr-2" />
+                            Line
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuSeparator />
+                          
+                          <DropdownMenuSub>
+                            <DropdownMenuSubTrigger>
+                              <Tag class="w-4 h-4 mr-2" />
+                              Labels: Some label
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent>
+                              <DropdownMenuItem
+                                v-for="col in 3"
+                                :key="col"
+                              >
+                                {{ col + ' label'}}
+                              </DropdownMenuItem>
+                            </DropdownMenuSubContent>
+                          </DropdownMenuSub>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+              
+                      <Button variant="ghost" size="sm" title="Hide chart">
+                        <EyeOff class="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+              
+                  <ChartContainer
+                    :config="chartConfig"
+                    class="h-[150px] w-80"
+                  >
+                    <VisSingleContainer :data="chartData" :width="150" class="flex! items-center gap-4">
+                      <VisTooltip :triggers="pieTooltipTriggers" />
+                      
+                      <VisBulletLegend 
+                        :items="pieLegendItems"
+                        orientation="vertical"
+                      />
+              
+                      <VisDonut :value="(d: any) => d.value" :arc-width="50"/>
+                    </VisSingleContainer>
+                  </ChartContainer>
                 </div>
               </div>
             </div>

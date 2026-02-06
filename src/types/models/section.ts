@@ -20,6 +20,69 @@ export interface SortConfig {
 }
 
 /**
+ * Section color theme (same as cards for consistency)
+ */
+export type SectionColorTheme = 
+  | 'slate' | 'neutral' | 'red' | 'orange' | 'amber' | 'yellow'
+  | 'lime' | 'green' | 'emerald' | 'teal' | 'cyan' | 'sky'
+  | 'blue' | 'indigo' | 'violet' | 'purple' | 'fuchsia' | 'pink' | 'rose'
+
+/**
+ * Section title size options
+ */
+export type SectionTitleSize = 'large' | 'xlarge' | '2xlarge'
+
+/**
+ * Chart position relative to table
+ */
+export type ChartPosition = 'left' | 'right' | 'top' | 'bottom'
+
+/**
+ * Table style configuration
+ */
+export interface SectionTableStyle {
+  /** Show table borders */
+  showBorders: boolean
+  
+  /** Rounded borders */
+  roundedBorders: boolean
+  
+  /** Alternating row colors */
+  alternatingRows: boolean
+}
+
+/**
+ * Section style configuration
+ */
+export interface SectionStyleConfig {
+  /** Color theme */
+  colorTheme: SectionColorTheme
+  
+  /** Title text size */
+  titleSize: SectionTitleSize
+  
+  /** Table style settings */
+  tableStyle: SectionTableStyle
+  
+  /** Chart position */
+  chartPosition: ChartPosition
+}
+
+/**
+ * Default section style configuration
+ */
+export const DEFAULT_SECTION_STYLE: SectionStyleConfig = {
+  colorTheme: 'blue',
+  titleSize: 'xlarge',
+  tableStyle: {
+    showBorders: true,
+    roundedBorders: true,
+    alternatingRows: true,
+  },
+  chartPosition: 'right',
+}
+
+/**
  * Section configuration
  */
 export interface SectionConfig {
@@ -46,6 +109,9 @@ export interface SectionConfig {
   
   /** Apply filters to charts (default: true) */
   applyFiltersToCharts?: boolean
+  
+  /** Style configuration */
+  style?: SectionStyleConfig
 }
 
 /**
@@ -84,6 +150,7 @@ export interface CreateSectionOptions {
   title?: string
   header: RowData
   data: DataMatrix
+  style?: Partial<SectionStyleConfig>
 }
 
 /**
