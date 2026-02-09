@@ -4,7 +4,7 @@ import type {
   RowData,
   SortConfig,
 } from '@/types'
-import type { CellFormulaValue, CellValue } from 'exceljs'
+import type { Cell } from 'exceljs'
 
 /**
  * FilterService
@@ -41,7 +41,7 @@ export class FilterService {
    * Compare two values for sorting
    */
   // services/FilterService.ts
-  private static compareValues(a: CellValue, b: CellValue, direction: 'asc' | 'desc'): number {
+  private static compareValues(a: Cell, b: Cell, direction: 'asc' | 'desc'): number {
     let valueA = (a as any)?.result ?? (a as any)?.value ?? a
     let valueB = (b as any)?.result ?? (b as any)?.value ?? b
     
@@ -79,8 +79,8 @@ export class FilterService {
     const { columnIndex, direction } = sortConfig
 
     return [...data].sort((rowA, rowB) => {
-      const valueA = rowA[columnIndex]
-      const valueB = rowB[columnIndex]
+      const valueA = rowA[columnIndex]!
+      const valueB = rowB[columnIndex]!
       return this.compareValues(valueA, valueB, direction)
     })
   }

@@ -5,7 +5,6 @@
 import type { Workbook } from 'exceljs'
 import type { Nullable } from '../common/base'
 import type { SheetConfig, SheetSummary } from './sheet'
-import type { Sheet } from '@/models'
 
 /**
  * Configuration d'un workbook

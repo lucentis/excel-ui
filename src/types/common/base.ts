@@ -2,7 +2,7 @@
  * Types utilitaires de base
  */
 
-import type { CellValue } from "exceljs"
+import type { Cell } from "exceljs"
 
 /**
  * Identifiant unique
@@ -41,7 +41,7 @@ export type DeepReadonly<T> = {
 /**
  * Ligne de données (tableau de cellules)
  */
-export type RowData = CellValue[]
+export type RowData = Cell[]
 
 /**
  * Matrice de données (tableau de lignes)

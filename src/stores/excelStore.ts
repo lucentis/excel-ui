@@ -1,8 +1,8 @@
-import { computed, reactive } from 'vue'
+import { reactive } from 'vue'
 import type { Workbook } from 'exceljs'
 import type { WorkbookConfig, ChartType, RowData, CardStyleConfig, SectionStyleConfig } from '@/types'
 import { Sheet } from '@/models'
-import { SheetService, SectionService, ExcelParser, CardService } from '@/services'
+import { SheetService, SectionService, CardService } from '@/services'
 
 /**
  * Excel Store
