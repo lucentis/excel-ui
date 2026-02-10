@@ -98,33 +98,5 @@ const editValue = ref('')
       </div>
     </div>
 
-    <Separator />
-
-    <!-- Keyboard Shortcuts -->
-    <div class="space-y-2">
-      <h4 class="font-medium text-sm">Keyboard Shortcuts</h4>
-      
-      <div class="space-y-1.5 text-xs">
-        <div class="flex items-center justify-between">
-          <span class="text-gray-600">Save changes</span>
-          <kbd class="px-2 py-0.5 bg-gray-100 rounded text-xs border">Enter</kbd>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-gray-600">Cancel editing</span>
-          <kbd class="px-2 py-0.5 bg-gray-100 rounded text-xs border">Esc</kbd>
-        </div>
-      </div>
-    </div>
-
-    <!-- Demo button -->
-    <div class="pt-4 border-t">
-      <div class="text-xs text-gray-500 mb-2">Demo (UI only)</div>
-      <button
-        @click="currentlyEditing = currentlyEditing ? null : { row: 2, col: 3, sheet: 'Sheet1' }; editValue = '=SUM(A1:A10)'"
-        class="px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 rounded w-full"
-      >
-        {{ currentlyEditing ? 'Clear Demo' : 'Simulate Editing' }}
-      </button>
-    </div>
   </div>
 </template>

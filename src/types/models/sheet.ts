@@ -2,7 +2,7 @@
  * Types relatifs aux feuilles Excel
  */
 
-import type { Worksheet } from 'exceljs'
+import type { Cell, Worksheet } from 'exceljs'
 import type { DataMatrix, Nullable } from '../common/base'
 import type { SectionConfig } from './section'
 
@@ -24,6 +24,10 @@ export interface SheetConfig {
   
   /** Sections détectées */
   sections: SectionConfig[]
+
+  currentCell: Nullable<Cell>
+
+  editionMode: boolean
 }
 
 /**

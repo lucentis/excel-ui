@@ -19,6 +19,8 @@ export const excelStore = reactive<WorkbookConfig>({
     rawData: [],
     title: '',
     sections: [],
+    currentCell: null,
+    editionMode: false,
   },
 })
 
@@ -73,7 +75,28 @@ export function clearWorkbook(): void {
     rawData: [],
     title: '',
     sections: [],
+    currentCell: null,
+    editionMode: false,
   }
+}
+
+// ============================================================================
+// Edition Mode Operations
+// ============================================================================
+
+/**
+ * Enable edition mode for current sheet
+ */
+export function enableEditionMode(): void {
+  excelStore.currentSheet.editionMode = true
+}
+
+/**
+ * Disable edition mode for current sheet
+ */
+export function disableEditionMode(): void {
+  excelStore.currentSheet.editionMode = false
+  excelStore.currentSheet.currentCell = null
 }
 
 // ============================================================================

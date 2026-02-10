@@ -1,10 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import CustomTab from './CustomTab.vue'
 import EditionTab from './EditionTab.vue'
+import { disableEditionMode, enableEditionMode } from '@/stores/excelStore'
 
 const activeTab = ref('custom')
+// Watch for tab changes to toggle edition mode
+watch(activeTab, (newTab) => {
+  if (newTab === 'edition') {
+    enableEditionMode()
+  } else {
+    disableEditionMode()
+  }
+})
 </script>
 
 <template>
