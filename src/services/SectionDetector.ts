@@ -55,11 +55,11 @@ export class SectionDetector {
     if (firstRowCellCount === 1 && rows.length > 1) {
       // First row = section title (1 filled cell)
       section.title = String(rows[0]?.[0])
-      section.header = rows[1] as string[]
+      section.header = rows[1]!
       section.data = rows.slice(2)
     } else {
       // No title, first row = header
-      section.header = rows[0] as string[]
+      section.header = rows[0]!
       section.data = rows.slice(1)
     }
 

@@ -1,4 +1,4 @@
-import type { CellValue, Worksheet } from 'exceljs'
+import type { Worksheet } from 'exceljs'
 import type { DataMatrix, RowData } from '@/types'
 
 /**
@@ -30,7 +30,7 @@ export class ExcelParser {
    * Check if a row is completely empty
    */
   static isEmptyRow(row: RowData): boolean {
-    return row.every(cell => cell === null || cell === undefined || (cell as any).value === '')
+    return row.every(cell => cell === null || cell === undefined || cell.value === '')
   }
 
   /**

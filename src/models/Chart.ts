@@ -3,7 +3,6 @@ import type {
     ChartType,
     ColumnIndex,
     RowData,
-    RowIndex,
   } from '@/types'
   
   /**

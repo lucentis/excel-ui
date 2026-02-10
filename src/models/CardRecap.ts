@@ -1,7 +1,6 @@
 import type { 
   CardRecapConfig,
   CardStyleConfig,
-  CardValueFormat,
   RowIndex,
   ColumnIndex,
 } from '@/types'

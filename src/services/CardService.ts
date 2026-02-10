@@ -5,8 +5,6 @@ import type {
   ColumnIndex,
   CardStyleConfig,
 } from '@/types'
-import { DEFAULT_CARD_STYLE } from '@/types/models/card'
-import type { CellValue } from 'exceljs'
 
 /**
  * CardService
@@ -23,7 +21,7 @@ export class CardService {
     style?: Partial<CardStyleConfig>
   ): CardRecap {
     // If no data rows, take value from header itself (single-line section)
-    const value: CellValue = section.data.length > 0 
+    const value = section.data.length > 0 
       ? section.data[rowIndex]?.[colIndex] 
       : section.header[colIndex]
 
