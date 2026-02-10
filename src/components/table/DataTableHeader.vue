@@ -4,6 +4,8 @@ import { Badge } from '@/components/ui/badge'
 import { TableHead, TableRow } from '@/components/ui/table'
 import type { RowData, SortConfig } from '@/types'
 import type { SectionColorThemeDefinition } from '@/lib/sectionTheme'
+import type { Cell } from 'exceljs'
+import { excelStore } from '@/stores/excelStore'
 
 const props = defineProps<{
   headers: RowData
@@ -29,6 +31,16 @@ function getSortIcon(colIndex: number, sortConfig?: SortConfig) {
   if (!sortConfig || sortConfig.columnIndex !== colIndex) return null
   return sortConfig.direction === 'asc' ? ArrowUp : ArrowDown
 }
+
+function handleDoubleClick(header: Cell): void {
+  if (!excelStore.currentSheet.editionMode) return 
+  
+  const cell: Cell = excelStore.currentSheet.rawData[Number(header.row) -1]?.[Number(header.col) - 1]!
+
+  excelStore.currentSheet.currentCell = cell
+  excelStore.currentSheet.editionMode = true
+
+}
 </script>
 
 <template>
@@ -44,6 +56,7 @@ function getSortIcon(colIndex: number, sortConfig?: SortConfig) {
           : '',
         colorTheme?.text,
       ]"
+      @dblclick="handleDoubleClick(header)"
       @click="emit('headerClick', index)"
     >
       <div class="flex items-center gap-4 group">

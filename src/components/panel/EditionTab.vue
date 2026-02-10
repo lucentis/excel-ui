@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { Separator } from '@/components/ui/separator'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Edit3, Info } from 'lucide-vue-next'
+import { excelStore } from '@/stores/excelStore'
 
-// Local state just for UI display
-const currentlyEditing = ref<{ row: number; col: number; sheet: string } | null>(null)
-const editValue = ref('')
+function setNewValue(event: string | number) {
+  excelStore.currentSheet.currentCell!.value = event
+}
+
+function handleSave(): void {
+  console.log();
+}
 </script>
 
 <template>
@@ -29,8 +33,8 @@ const editValue = ref('')
     <div class="space-y-3">
       <h4 class="font-medium text-sm">Current Cell</h4>
       
-      <div v-if="currentlyEditing" class="space-y-3">
-        <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
+      <div v-if="excelStore.currentSheet.currentCell" class="space-y-3">
+        <!-- <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
           <div class="text-xs">
             <div class="font-medium text-blue-900">
               Row {{ currentlyEditing.row + 1 }}, Column {{ currentlyEditing.col + 1 }}
@@ -39,28 +43,18 @@ const editValue = ref('')
               Sheet: {{ currentlyEditing.sheet }}
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- Edit Input -->
         <div class="space-y-2">
           <Label for="cell-value" class="text-xs text-gray-600">Edit Value</Label>
           <Input 
             id="cell-value"
-            v-model="editValue" 
             placeholder="Enter new value..."
             class="font-mono text-sm"
+            :model-value="String(excelStore.currentSheet.currentCell)"
+            @update:model-value="setNewValue($event)"
           />
-          <div class="flex gap-2">
-            <button class="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
-              Save
-            </button>
-            <button 
-              @click="currentlyEditing = null"
-              class="px-3 py-1.5 text-xs bg-gray-200 rounded hover:bg-gray-300"
-            >
-              Cancel
-            </button>
-          </div>
         </div>
       </div>
 
