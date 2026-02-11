@@ -52,9 +52,13 @@ function handleSave(): void {
             id="cell-value"
             placeholder="Enter new value..."
             class="font-mono text-sm"
-            :model-value="String(excelStore.currentSheet.currentCell)"
-            @update:model-value="setNewValue($event)"
           />
+
+          <div class="flex gap-2">
+            <button class="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
+              Save
+            </button>
+          </div>
         </div>
       </div>
 

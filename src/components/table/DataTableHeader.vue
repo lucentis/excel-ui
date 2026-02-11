@@ -38,8 +38,9 @@ function handleDoubleClick(header: Cell): void {
   const cell: Cell = excelStore.currentSheet.rawData[Number(header.row) -1]?.[Number(header.col) - 1]!
 
   excelStore.currentSheet.currentCell = cell
-  excelStore.currentSheet.editionMode = true
 
+  console.log('double click on header', header);
+  
 }
 </script>
 
@@ -62,7 +63,7 @@ function handleDoubleClick(header: Cell): void {
       <div class="flex items-center gap-4 group">
         <div 
           class="flex items-center gap-1 flex-1"
-          @click="props.hasDataRows ? emit('sortClick', index) : null"
+          @click="props.hasDataRows && !excelStore.currentSheet.editionMode ? emit('sortClick', index) : null"
         >
           {{ formatCellValue(header) || `Col ${index + 1}` }}
           
