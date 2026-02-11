@@ -4,14 +4,18 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Edit3, Info } from 'lucide-vue-next'
 import { excelStore } from '@/stores/excelStore'
+import { formatCellValue } from '@/lib/utils'
+import { computed } from 'vue'
 
 function setNewValue(event: string | number) {
   excelStore.currentSheet.currentCell!.value = event
 }
 
 function handleSave(): void {
-  console.log();
+  console.log('click on save button');
 }
+
+const cellValue = computed(() => formatCellValue(excelStore.currentSheet.currentCell))
 </script>
 
 <template>
@@ -34,17 +38,6 @@ function handleSave(): void {
       <h4 class="font-medium text-sm">Current Cell</h4>
       
       <div v-if="excelStore.currentSheet.currentCell" class="space-y-3">
-        <!-- <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <div class="text-xs">
-            <div class="font-medium text-blue-900">
-              Row {{ currentlyEditing.row + 1 }}, Column {{ currentlyEditing.col + 1 }}
-            </div>
-            <div class="text-blue-700 mt-1">
-              Sheet: {{ currentlyEditing.sheet }}
-            </div>
-          </div>
-        </div> -->
-
         <!-- Edit Input -->
         <div class="space-y-2">
           <Label for="cell-value" class="text-xs text-gray-600">Edit Value</Label>
@@ -52,6 +45,7 @@ function handleSave(): void {
             id="cell-value"
             placeholder="Enter new value..."
             class="font-mono text-sm"
+            :model-value="cellValue"
           />
 
           <div class="flex gap-2">
@@ -70,31 +64,6 @@ function handleSave(): void {
     </div>
 
     <Separator />
-
-    <!-- Quick Reference -->
-    <div class="space-y-3">
-      <h4 class="font-medium text-sm flex items-center gap-2">
-        <Info class="w-4 h-4" />
-        Quick Reference
-      </h4>
-      
-      <div class="space-y-2 text-xs">
-        <div class="p-2 bg-gray-50 rounded">
-          <div class="font-medium text-gray-900">Text</div>
-          <div class="text-gray-500 font-mono text-[10px] mt-0.5">Product Name</div>
-        </div>
-
-        <div class="p-2 bg-gray-50 rounded">
-          <div class="font-medium text-gray-900">Number</div>
-          <div class="text-gray-500 font-mono text-[10px] mt-0.5">123 or 45.67</div>
-        </div>
-
-        <div class="p-2 bg-gray-50 rounded">
-          <div class="font-medium text-gray-900">Formula</div>
-          <div class="text-gray-500 font-mono text-[10px] mt-0.5">=SUM(A1:A10)</div>
-        </div>
-      </div>
-    </div>
 
   </div>
 </template>
