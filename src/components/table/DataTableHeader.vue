@@ -34,10 +34,8 @@ function getSortIcon(colIndex: number, sortConfig?: SortConfig) {
 
 function handleDoubleClick(header: Cell): void {
   if (!excelStore.currentSheet.editionMode) return 
-  
-  const cell: Cell = excelStore.currentSheet.rawData[Number(header.row) -1]?.[Number(header.col) - 1]!
 
-  excelStore.currentSheet.currentCell = cell
+  excelStore.currentSheet.currentCell = header
 
   console.log('double click on header', header);
   

@@ -3,6 +3,8 @@ import { Eye, EyeOff } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import { TableCell, TableRow } from '@/components/ui/table'
 import type { RowData } from '@/types'
+import { excelStore } from '@/stores/excelStore';
+import type { Cell } from 'exceljs';
 
 const props = defineProps<{
   row: RowData
@@ -21,6 +23,15 @@ const emit = defineEmits<{
 function isCellSelected(colIndex: number, selectedCell?: { row: number; col: number } | null): boolean {
   if (!selectedCell) return false
   return selectedCell.row === props.rowIndex && selectedCell.col === colIndex
+}
+
+function handleDoubleClick(cell: Cell): void {
+  if (!excelStore.currentSheet.editionMode) return 
+
+  excelStore.currentSheet.currentCell = cell
+
+  console.log('double click on cell', cell);
+  
 }
 </script>
 
@@ -65,7 +76,8 @@ function isCellSelected(colIndex: number, selectedCell?: { row: number; col: num
         isCellSelected(cellIndex, selectedCell) ? 'bg-blue-100' : '',
         isExcluded ? 'opacity-50' : '',
       ]"
-      @click="emit('cellClick', cellIndex)"
+      @click="!excelStore.currentSheet.editionMode && emit('cellClick', cellIndex)"
+      @dblclick="handleDoubleClick(cell)"
     >
       <div class="flex items-center gap-2">
         {{ cell }}
