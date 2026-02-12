@@ -1,4 +1,4 @@
-import type { Worksheet } from 'exceljs'
+import type { Cell, Worksheet } from 'exceljs'
 import type { 
   SheetConfig,
   SheetMetadata,
@@ -6,6 +6,8 @@ import type {
   Nullable,
 } from '@/types'
 import { Section } from './Section'
+import { formulaEngine } from '@/services/FormulaEngine'
+import { excelStore } from '@/stores/excelStore'
 
 /**
  * Sheet Model
@@ -31,6 +33,8 @@ export class Sheet {
       rawData,
       title,
       sections: sections.map(s => s.toConfig()),
+      currentCell: null,
+      editionMode: false,
     })
   }
 
@@ -50,7 +54,7 @@ export class Sheet {
     return this.config.worksheet
   }
 
-  get rawData(): ReadonlyArray<ReadonlyArray<unknown>> {
+  get rawData(): Readonly<DataMatrix> {
     return this.config.rawData
   }
 
@@ -76,6 +80,17 @@ export class Sheet {
   getSection(index: number): Section | undefined {
     const sectionConfig = this.config.sections[index]
     return sectionConfig ? Section.fromConfig(sectionConfig) : undefined
+  }
+
+  updateCell(cell: Cell, newValue: any): Sheet {
+    const sheetName = this.name
+    const value = cell.formula ? '=' + newValue : newValue
+    const changes = formulaEngine.setCellValue(sheetName, Number(cell.row), Number(cell.col), value)
+
+    console.log(changes);
+    
+
+    return new Sheet({...this.config})
   }
 
   // ============================================================================

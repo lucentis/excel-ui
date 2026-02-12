@@ -3,19 +3,18 @@ import { Separator } from '@/components/ui/separator'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Edit3, Info } from 'lucide-vue-next'
-import { excelStore } from '@/stores/excelStore'
+import { excelStore, updateCell } from '@/stores/excelStore'
 import { formatCellValue } from '@/lib/utils'
-import { computed } from 'vue'
-
-function setNewValue(event: string | number) {
-  excelStore.currentSheet.currentCell!.value = event
-}
-
-function handleSave(): void {
-  console.log('click on save button');
-}
+import { computed, ref } from 'vue'
 
 const cellValue = computed(() => formatCellValue(excelStore.currentSheet.currentCell))
+
+const cellModel = ref()
+
+function handleSave(): void {
+  const newValue = cellModel.value ?? cellValue.value;
+  updateCell(excelStore.currentSheet.currentCell!, newValue)
+}
 </script>
 
 <template>
@@ -41,15 +40,19 @@ const cellValue = computed(() => formatCellValue(excelStore.currentSheet.current
         <!-- Edit Input -->
         <div class="space-y-2">
           <Label for="cell-value" class="text-xs text-gray-600">Edit Value</Label>
-          <Input 
-            id="cell-value"
-            placeholder="Enter new value..."
-            class="font-mono text-sm"
-            :model-value="cellValue"
-          />
-
           <div class="flex gap-2">
-            <button class="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
+            <Input 
+              id="cell-value"
+              placeholder="Enter new value..."
+              class="font-mono text-sm"
+              :model-value="String(cellValue)"
+              @update:model-value="(value) => cellModel = value"
+            />
+
+            <button 
+              class="px-3 py-1.5 text-sm font-medium bg-green-100 text-green-900 border border-green-200 rounded hover:bg-green-200"
+              @click="handleSave"
+            >
               Save
             </button>
           </div>

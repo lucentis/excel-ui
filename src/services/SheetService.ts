@@ -1,4 +1,4 @@
-import type { Worksheet } from 'exceljs'
+import type { Cell, CellValue, Worksheet } from 'exceljs'
 import { Sheet, Section } from '@/models'
 import { ExcelParser } from './ExcelParser'
 import { SectionDetector } from './SectionDetector'
@@ -31,6 +31,15 @@ export class SheetService {
   ): Sheet {
     return sheet.updateSection(sectionIndex, updater)
   }
+
+  static updateCell(
+    sheet: Sheet,
+    cell: Cell,
+    newValue: CellValue
+  ): Sheet {
+    return sheet.updateCell(cell, newValue)
+  }
+
 
   /**
    * Get section by index

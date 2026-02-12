@@ -1,8 +1,9 @@
 import { reactive } from 'vue'
-import type { Workbook } from 'exceljs'
-import type { WorkbookConfig, ChartType, RowData, CardStyleConfig, SectionStyleConfig } from '@/types'
+import type { Cell, Workbook } from 'exceljs'
+import type { WorkbookConfig, ChartType, RowData, CardStyleConfig, SectionStyleConfig, DataMatrix } from '@/types'
 import { Sheet } from '@/models'
 import { SheetService, SectionService, CardService } from '@/services'
+import { formulaEngine } from '@/services/FormulaEngine'
 
 /**
  * Excel Store
@@ -36,6 +37,25 @@ export function setWorkbook(wb: Workbook, name: string): void {
   excelStore.fileName = name
   excelStore.sheetNames = wb.worksheets.map(ws => ws.name)
 
+  const sheets: Record<string, DataMatrix> = {}
+
+  wb.worksheets.forEach(ws => {
+    const sheet = SheetService.buildSheet(ws.name, ws)
+    excelStore.sheets[sheet.name] = sheet.toConfig()
+    sheets[sheet.name] = sheet.rawData.map(row => row)
+  })
+
+  // 🔥 Reset + init engine
+  formulaEngine.destroy()
+
+  formulaEngine.initialize(
+    sheets,
+    excelStore.sheetNames
+  )
+
+  console.log(formulaEngine);
+  
+
   if (excelStore.sheetNames[0]) {
     setCurrentSheet(excelStore.sheetNames[0])
   }
@@ -52,13 +72,7 @@ export function setCurrentSheet(sheetName: string): void {
     return
   }
 
-  const worksheet = excelStore.workbook.getWorksheet(sheetName)
-  if (!worksheet) return
-
-  const sheet = SheetService.buildSheet(sheetName, worksheet)
-
-  excelStore.sheets[sheetName] = sheet.toConfig()
-  excelStore.currentSheet = sheet.toConfig()
+  throw new Error(`Sheet ${sheetName} not found in workbook`)
 }
 
 /**
@@ -78,6 +92,19 @@ export function clearWorkbook(): void {
     currentCell: null,
     editionMode: false,
   }
+}
+
+// ============================================================================
+// Sheet Operations
+// ============================================================================
+
+export function updateCell(cell: Cell, newValue: string) {
+  const sheet = Sheet.fromConfig(excelStore.currentSheet)
+  const updatedSheet = SheetService.updateCell(sheet, cell, newValue)
+
+  const updatedConfig = updatedSheet.toConfig()
+
+  excelStore.sheets[updatedSheet.name] = updatedConfig
 }
 
 // ============================================================================
