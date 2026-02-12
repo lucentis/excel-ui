@@ -1,4 +1,4 @@
-import type { Cell, Worksheet } from 'exceljs'
+import type { Cell, CellValue, Worksheet } from 'exceljs'
 import type { 
   SheetConfig,
   SheetMetadata,
@@ -85,10 +85,25 @@ export class Sheet {
   updateCell(cell: Cell, newValue: any): Sheet {
     const sheetName = this.name
     const value = cell.formula ? '=' + newValue : newValue
-    const changes = formulaEngine.setCellValue(sheetName, Number(cell.row), Number(cell.col), value)
+    const changes = formulaEngine.setCellValue(sheetName, Number(cell.row) -1 , Number(cell.col) -1, value)
 
-    console.log(changes);
-    
+    changes.forEach(change => {
+      if (!('address' in change)) return // Skip named expressions
+  
+      const { row, col } = change.address
+
+      const changedCell = this.rawData[row]?.[col] as Cell
+
+      if (!changedCell) return 
+      
+      if (cell == changedCell && changedCell.formula) {
+        changedCell.value = { formula: value.substring(1), result: change.newValue as any} // ExcelJS / HyperFormula type mismatch. Runtime safe – cast volontaire
+      } else if (cell == changedCell) {
+        changedCell.value = change.newValue as any
+      } else {
+        changedCell.value = { formula: changedCell.formula, result: change.newValue as any}
+      }
+    });
 
     return new Sheet({...this.config})
   }

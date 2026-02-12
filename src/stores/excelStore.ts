@@ -52,10 +52,7 @@ export function setWorkbook(wb: Workbook, name: string): void {
     sheets,
     excelStore.sheetNames
   )
-
-  console.log(formulaEngine);
   
-
   if (excelStore.sheetNames[0]) {
     setCurrentSheet(excelStore.sheetNames[0])
   }
