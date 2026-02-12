@@ -79,8 +79,16 @@ function handleDoubleClick(cell: Cell): void {
       @click="!excelStore.currentSheet.editionMode && emit('cellClick', cellIndex)"
       @dblclick="handleDoubleClick(cell)"
     >
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 relative">
         {{ cell }}
+
+        <!-- Badge pour l'adresse Excel -->
+        <Badge
+          v-if="excelStore.currentSheet.currentCell?.formula"
+          class="absolute top-0 right-0 text-[0.6em] bg-gray-100 text-gray-600"
+        >
+          {{ cell.address }}
+        </Badge>
         <Badge
           v-if="isCellSelected(cellIndex, selectedCell)"
           class="text-xs bg-sky-100"
