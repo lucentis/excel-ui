@@ -1,16 +1,22 @@
 import { describe, it, expect } from 'vitest'
 import { CardService } from '@/services/CardService'
 import type { SectionConfig } from '@/types'
+import type { Cell } from 'exceljs'
+
+function makeCell(value: any): Cell {
+  return { value } as Cell
+}
 
 describe('CardService', () => {
   const mockSection: SectionConfig = {
-    header: ['Name', 'Sales', 'Quantity'],
+    header: [makeCell('Name'), makeCell('Sales'), makeCell('Quantity')],
     data: [
-      ['Product A', 100, 5],
-      ['Product B', 200, 10],
-      ['Product C', 150, 8],
+      [makeCell('Product A'), makeCell(100), makeCell(5)],
+      [makeCell('Product B'), makeCell(200), makeCell(10)],
+      [makeCell('Product C'), makeCell(150), makeCell(8)],
     ],
   }
+
 
   describe('createCardRecap', () => {
     it('should create card recap from data cell', () => {
@@ -18,20 +24,20 @@ describe('CardService', () => {
       
       expect(card.rowIndex).toBe(0)
       expect(card.colIndex).toBe(1)
-      expect(card.value).toBe(100)
-      expect(card.label).toBe('Sales')
+      expect(card.value).toStrictEqual({value: 100})
+      expect(card.label).toStrictEqual({value: 'Sales'})
     })
 
     it('should create card recap from header when no data', () => {
       const sectionNoData: SectionConfig = {
-        header: ['Total', 'Amount'],
+        header: [makeCell('Total'), makeCell('Amount')],
         data: [],
       }
       
       const card = CardService.createCardRecap(sectionNoData, 0, 1)
       
-      expect(card.value).toBe('Amount')
-      expect(card.label).toBe('Total')
+      expect(card.value).toStrictEqual({value: 'Amount'})
+      expect(card.label).toStrictEqual({value: 'Total'})
     })
 
     it('should handle different column indices', () => {
@@ -39,9 +45,11 @@ describe('CardService', () => {
       const card1 = CardService.createCardRecap(mockSection, 1, 1)
       const card2 = CardService.createCardRecap(mockSection, 1, 2)
       
-      expect(card0.value).toBe('Product B')
-      expect(card1.value).toBe(200)
-      expect(card2.value).toBe(10)
+      expect(card0.value).toStrictEqual({
+        value: "Product B",
+      })
+      expect(card1.value).toStrictEqual({value: 200})
+      expect(card2.value).toStrictEqual({value: 10})
     })
   })
 

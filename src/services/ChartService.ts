@@ -84,8 +84,8 @@ export class ChartService {
       .filter(row => !chart.excludedRows.includes(row))
       .map((row, index): ChartDataPoint => ({
         index,
-        name: String(row[chart.labelColumnIndex] || ''),
-        value: Number(row[chart.columnIndex]) || 0,
+        name: String(row[chart.labelColumnIndex]?.value || ''),
+        value: Number(row[chart.columnIndex]?.value) || 0,
       }))
 
     // Calculate percentages
@@ -101,7 +101,7 @@ export class ChartService {
    * Get the value column label
    */
   static getChartValueLabel(section: SectionConfig, chart: Chart): string {
-    return String(section.header[chart.columnIndex] || 'Value')
+    return String(section.header[chart.columnIndex]?.value || 'Value')
   }
 
   /**
@@ -118,7 +118,7 @@ export class ChartService {
     return section.header
       .map((header, index) => ({
         index,
-        label: String(header || `Col ${index + 1}`)
+        label: String(header.value || `Col ${index + 1}`)
       }))
       .filter(col => !this.isNumericColumn(section, col.index))
   }

@@ -1,126 +1,137 @@
 import { describe, it, expect } from 'vitest'
 import { SectionDetector } from '@/services/SectionDetector'
 import type { DataMatrix } from '@/types'
+import type { Cell } from 'exceljs'
+
+function makeCell(value: any): Cell {
+  return { value } as Cell
+}
 
 describe('SectionDetector', () => {
   describe('detectSections', () => {
     it('should detect single section with title', () => {
       const rawData: DataMatrix = [
-        ['Document Title'],
+        [makeCell('Document Title')],
         [],
-        ['Section 1'],
-        ['Name', 'Value'],
-        ['Alice', 100],
-        ['Bob', 200],
+        [makeCell('Section 1')],
+        [makeCell('Name'), makeCell('Value')],
+        [makeCell('Alice'), makeCell(100)],
+        [makeCell('Bob'), makeCell(200)],
       ]
 
       const sections = SectionDetector.detectSections(rawData)
 
       expect(sections).toHaveLength(1)
-      expect(sections[0]!.title).toBe('Section 1')
-      expect(sections[0]!.header).toEqual(['Name', 'Value'])
+      expect(sections[0]!.title?.value).toBe('Section 1')
+      expect(sections[0]!.header[0]?.value).toBe('Name')
+      expect(sections[0]!.header[1]?.value).toBe('Value')
       expect(sections[0]!.data).toHaveLength(2)
     })
 
     it('should detect section without title (direct header)', () => {
       const rawData: DataMatrix = [
-        ['Document Title'],
+        [makeCell('Document Title')],
         [],
-        ['Name', 'Value', 'City'],
-        ['Alice', 100, 'Paris'],
-        ['Bob', 200, 'London'],
+        [makeCell('Name'), makeCell('Value'), makeCell('City')],
+        [makeCell('Alice'), makeCell(100), makeCell('Paris')],
+        [makeCell('Bob'), makeCell(200), makeCell('London')],
       ]
 
       const sections = SectionDetector.detectSections(rawData)
 
       expect(sections).toHaveLength(1)
       expect(sections[0]!.title).toBeUndefined()
-      expect(sections[0]!.header).toEqual(['Name', 'Value', 'City'])
+      expect(sections[0]!.header[0]?.value).toBe('Name')
+      expect(sections[0]!.header[1]?.value).toBe('Value')
+      expect(sections[0]!.header[2]?.value).toBe('City')
       expect(sections[0]!.data).toHaveLength(2)
     })
 
     it('should detect multiple sections', () => {
       const rawData: DataMatrix = [
-        ['Document Title'],
+        [makeCell('Document Title')],
         [],
-        ['Section 1'],
-        ['Col1', 'Col2'],
-        ['A', 1],
-        ['B', 2],
+        [makeCell('Section 1')],
+        [makeCell('Col1'), makeCell('Col2')],
+        [makeCell('A'), makeCell(1)],
+        [makeCell('B'), makeCell(2)],
         [],
-        ['Section 2'],
-        ['Col3', 'Col4'],
-        ['C', 3],
-        ['D', 4],
+        [makeCell('Section 2')],
+        [makeCell('Col3'), makeCell('Col4')],
+        [makeCell('C'), makeCell(3)],
+        [makeCell('D'), makeCell(4)],
       ]
 
       const sections = SectionDetector.detectSections(rawData)
 
       expect(sections).toHaveLength(2)
-      expect(sections[0]!.title).toBe('Section 1')
-      expect(sections[1]!.title).toBe('Section 2')
+      expect(sections[0]!.title?.value).toBe('Section 1')
+      expect(sections[1]!.title?.value).toBe('Section 2')
       expect(sections[0]!.data).toHaveLength(2)
       expect(sections[1]!.data).toHaveLength(2)
     })
 
     it('should handle section with no data rows', () => {
       const rawData: DataMatrix = [
-        ['Document Title'],
+        [makeCell('Document Title')],
         [],
-        ['Section Title'],
-        ['Header1', 'Header2'],
+        [makeCell('Section Title')],
+        [makeCell('Header1'), makeCell('Header2')],
       ]
 
       const sections = SectionDetector.detectSections(rawData)
 
       expect(sections).toHaveLength(1)
-      expect(sections[0]!.title).toBe('Section Title')
-      expect(sections[0]!.header).toEqual(['Header1', 'Header2'])
+      expect(sections[0]!.title?.value).toBe('Section Title')
+      expect(sections[0]!.header[0]?.value).toBe('Header1')
+      expect(sections[0]!.header[1]?.value).toBe('Header2')
       expect(sections[0]!.data).toHaveLength(0)
     })
 
     it('should handle multiple empty rows between sections', () => {
       const rawData: DataMatrix = [
-        ['Document Title'],
+        [makeCell('Document Title')],
         [],
         [],
-        ['Section 1'],
-        ['Col1'],
-        ['A'],
+        [makeCell('Section 1')],
+        [makeCell('Col1')],
+        [makeCell('A')],
         [],
         [],
         [],
-        ['Section 2'],
-        ['Col2'],
-        ['B'],
+        [makeCell('Section 2')],
+        [makeCell('Col2')],
+        [makeCell('B')],
       ]
 
       const sections = SectionDetector.detectSections(rawData)
 
       expect(sections).toHaveLength(2)
-      expect(sections[0]!.title).toBe('Section 1')
-      expect(sections[1]!.title).toBe('Section 2')
+      expect(sections[0]!.title?.value).toBe('Section 1')
+      expect(sections[1]!.title?.value).toBe('Section 2')
     })
 
     it('should detect section without title when first row has multiple cells', () => {
       const rawData: DataMatrix = [
-        ['Document Title'],
+        [makeCell('Document Title')],
         [],
-        ['Name', 'Age', 'City'],
-        ['Alice', 30, 'Paris'],
+        [makeCell('Name'), makeCell('Age'), makeCell('City')],
+        [makeCell('Alice'), makeCell(30), makeCell('Paris')],
       ]
 
       const sections = SectionDetector.detectSections(rawData)
 
       expect(sections).toHaveLength(1)
       expect(sections[0]!.title).toBeUndefined()
-      expect(sections[0]!.header).toEqual(['Name', 'Age', 'City'])
+      expect(sections[0]!.header[0]?.value).toBe('Name')
+      expect(sections[0]!.header[1]?.value).toBe('Age')
+      expect(sections[0]!.header[2]?.value).toBe('City')
       expect(sections[0]!.data).toHaveLength(1)
     })
 
     it('should handle empty document', () => {
       const rawData: DataMatrix = [
-        ['Document Title'],
+        [makeCell('Document Title')],
       ]
 
       const sections = SectionDetector.detectSections(rawData)
@@ -130,12 +141,12 @@ describe('SectionDetector', () => {
 
     it('should finalize last section even without trailing empty row', () => {
       const rawData: DataMatrix = [
-        ['Document Title'],
+        [makeCell('Document Title')],
         [],
-        ['Section'],
-        ['Header'],
-        ['Data1'],
-        ['Data2'],
+        [makeCell('Section')],
+        [makeCell('Header')],
+        [makeCell('Data1')],
+        [makeCell('Data2')],
       ]
 
       const sections = SectionDetector.detectSections(rawData)
@@ -146,18 +157,20 @@ describe('SectionDetector', () => {
 
     it('should distinguish title from header by cell count', () => {
       const rawData: DataMatrix = [
-        ['Document Title'],
+        [makeCell('Document Title')],
         [],
-        ['Single Cell Title'],
-        ['Header1', 'Header2', 'Header3'],
-        ['A', 'B', 'C'],
+        [makeCell('Single Cell Title')],
+        [makeCell('Header1'), makeCell('Header2'), makeCell('Header3')],
+        [makeCell('A'), makeCell('B'), makeCell('C')],
       ]
 
       const sections = SectionDetector.detectSections(rawData)
 
       expect(sections).toHaveLength(1)
-      expect(sections[0]!.title).toBe('Single Cell Title')
-      expect(sections[0]!.header).toEqual(['Header1', 'Header2', 'Header3'])
+      expect(sections[0]!.title?.value).toBe('Single Cell Title')
+      expect(sections[0]!.header[0]?.value).toBe('Header1')
+      expect(sections[0]!.header[1]?.value).toBe('Header2')
+      expect(sections[0]!.header[2]?.value).toBe('Header3')
     })
   })
 })

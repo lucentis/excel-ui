@@ -1,44 +1,49 @@
 import { describe, it, expect } from 'vitest'
 import { ExcelParser } from '@/services/ExcelParser'
+import type { Cell } from 'exceljs'
+
+function makeCell(value: any): Cell {
+  return { value } as Cell
+}
 
 describe('ExcelParser', () => {
   describe('isEmptyRow', () => {
     it('should return true for completely empty row', () => {
       expect(ExcelParser.isEmptyRow([])).toBe(true)
-      expect(ExcelParser.isEmptyRow([null, null, null])).toBe(true)
-      expect(ExcelParser.isEmptyRow([undefined, undefined])).toBe(true)
-      expect(ExcelParser.isEmptyRow(['', '', ''])).toBe(true)
+      expect(ExcelParser.isEmptyRow([makeCell(null), makeCell(null), makeCell(null)])).toBe(true)
+      expect(ExcelParser.isEmptyRow([makeCell(undefined), makeCell(undefined)])).toBe(true)
+      expect(ExcelParser.isEmptyRow([makeCell(''), makeCell(''), makeCell('')])).toBe(true)
     })
 
     it('should return false for row with any value', () => {
-      expect(ExcelParser.isEmptyRow(['text', null])).toBe(false)
-      expect(ExcelParser.isEmptyRow([0])).toBe(false)
-      expect(ExcelParser.isEmptyRow([null, 123])).toBe(false)
-      expect(ExcelParser.isEmptyRow([false])).toBe(false)
+      expect(ExcelParser.isEmptyRow([makeCell('text'), makeCell(null)])).toBe(false)
+      expect(ExcelParser.isEmptyRow([makeCell(0)])).toBe(false)
+      expect(ExcelParser.isEmptyRow([makeCell(null), makeCell(123)])).toBe(false)
+      expect(ExcelParser.isEmptyRow([makeCell(false)])).toBe(false)
     })
 
     it('should handle mixed empty values', () => {
-      expect(ExcelParser.isEmptyRow([null, '', undefined])).toBe(true)
-      expect(ExcelParser.isEmptyRow([null, '', 'value'])).toBe(false)
+      expect(ExcelParser.isEmptyRow([makeCell(null), makeCell(''), makeCell(undefined)])).toBe(true)
+      expect(ExcelParser.isEmptyRow([makeCell(null), makeCell(''), makeCell('value')])).toBe(false)
     })
   })
 
   describe('countFilledCells', () => {
     it('should count non-empty cells', () => {
-      expect(ExcelParser.countFilledCells(['a', 'b', 'c'])).toBe(3)
-      expect(ExcelParser.countFilledCells(['a', null, 'c'])).toBe(2)
-      expect(ExcelParser.countFilledCells([1, 2, 3, 4])).toBe(4)
+      expect(ExcelParser.countFilledCells([makeCell('a'), makeCell('b'), makeCell('c')])).toBe(3)
+      expect(ExcelParser.countFilledCells([makeCell('a'), makeCell(null), makeCell('c')])).toBe(2)
+      expect(ExcelParser.countFilledCells([makeCell(1), makeCell(2), makeCell(3), makeCell(4)])).toBe(4)
     })
 
     it('should ignore empty values', () => {
-      expect(ExcelParser.countFilledCells([null, null, null])).toBe(0)
-      expect(ExcelParser.countFilledCells(['', '', ''])).toBe(0)
-      expect(ExcelParser.countFilledCells([undefined, undefined])).toBe(0)
+      expect(ExcelParser.countFilledCells([makeCell(null), makeCell(null), makeCell(null)])).toBe(0)
+      expect(ExcelParser.countFilledCells([makeCell(''), makeCell(''), makeCell('')])).toBe(0)
+      expect(ExcelParser.countFilledCells([makeCell(undefined), makeCell(undefined)])).toBe(0)
     })
 
     it('should handle mixed types', () => {
-      expect(ExcelParser.countFilledCells([0, false, '', null])).toBe(2) // 0 and false count
-      expect(ExcelParser.countFilledCells(['text', 123, true, null])).toBe(3)
+      expect(ExcelParser.countFilledCells([makeCell(0), makeCell(false), makeCell(''), makeCell(null)])).toBe(2) // 0 and false count
+      expect(ExcelParser.countFilledCells([makeCell('text'), makeCell(123), makeCell(true), makeCell(null)])).toBe(3)
     })
 
     it('should return 0 for undefined row', () => {
@@ -66,7 +71,6 @@ describe('ExcelParser', () => {
       const result = ExcelParser.extractRawData(mockWorksheet)
 
       expect(result).toHaveLength(3)
-      // Expect Cell objects with value property
       expect(result[0]![0]).toHaveProperty('value', 'Title')
       expect(result[1]![0]).toHaveProperty('value', 'Name')
       expect(result[1]![1]).toHaveProperty('value', 'Age')
@@ -87,7 +91,6 @@ describe('ExcelParser', () => {
 
       const result = ExcelParser.extractRawData(mockWorksheet)
 
-      // Cell object should contain formula data
       expect(result[0]![1]).toHaveProperty('value')
       expect((result[0]![1] as any).value).toHaveProperty('result', 100)
       expect((result[0]![1] as any).value).toHaveProperty('formula', 'SUM(A1:A10)')
@@ -111,7 +114,6 @@ describe('ExcelParser', () => {
 
       const result = ExcelParser.extractRawData(mockWorksheet)
 
-      // Cell object should contain richText
       expect(result[0]![1]).toHaveProperty('value')
       expect((result[0]![1] as any).value).toHaveProperty('richText')
     })
@@ -129,7 +131,6 @@ describe('ExcelParser', () => {
 
       const result = ExcelParser.extractRawData(mockWorksheet)
 
-      // Cell object should contain hyperlink
       expect(result[0]![1]).toHaveProperty('value')
       expect((result[0]![1] as any).value).toHaveProperty('text', 'Click here')
       expect((result[0]![1] as any).value).toHaveProperty('hyperlink')

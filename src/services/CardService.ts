@@ -26,10 +26,10 @@ export class CardService {
       : section.header[colIndex]
 
     const label = section.data.length > 0 
-      ? String(section.header[colIndex] || '') 
-      : String(section.header[0] || '')
+      ? section.header[colIndex]  
+      : section.header[0]
 
-    const cardRecap = CardRecap.create(rowIndex, colIndex, value, label)
+    const cardRecap = CardRecap.create(rowIndex, colIndex, value, label!)
 
     // Apply style if provided
     if (style) {

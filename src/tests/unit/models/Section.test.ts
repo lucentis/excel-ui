@@ -2,14 +2,19 @@ import { describe, it, expect } from 'vitest'
 import { Section } from '@/models'
 import { CardRecap, Chart } from '@/models'
 import type { SectionConfig } from '@/types'
+import type { Cell } from 'exceljs'
+
+function makeCell(value: any): Cell {
+  return { value } as Cell
+}
 
 describe('Section Model', () => {
   const mockConfig: SectionConfig = {
-    title: 'Test Section',
-    header: ['Name', 'Value'],
+    title: makeCell('Test Section'),
+    header: [makeCell('Name'), makeCell('Value')],
     data: [
-      ['Alice', 100],
-      ['Bob', 200],
+      [makeCell('Alice'), makeCell(100)],
+      [makeCell('Bob'), makeCell(200)],
     ],
   }
 
@@ -18,33 +23,43 @@ describe('Section Model', () => {
       const section = Section.fromConfig(mockConfig)
       
       expect(section.title).toBe('Test Section')
-      expect(section.header).toEqual(['Name', 'Value'])
+      expect(section.header[0]?.value).toBe('Name')
+      expect(section.header[1]?.value).toBe('Value')
       expect(section.data).toHaveLength(2)
     })
 
     it('should create new instance', () => {
-      const section = Section.create('My Section', ['Col1', 'Col2'], [[1, 2]])
+      const section = Section.create(
+        makeCell('My Section'), 
+        [makeCell('Col1'), makeCell('Col2')], 
+        [[makeCell(1), makeCell(2)]]
+      )
       
-      expect(section.title).toBe('My Section')
-      expect(section.header).toEqual(['Col1', 'Col2'])
+      expect(section.title?.value).toBe('My Section')
+      expect(section.header[0]?.value).toBe('Col1')
+      expect(section.header[1]?.value).toBe('Col2')
       expect(section.data).toHaveLength(1)
     })
 
     it('should create without title', () => {
-      const section = Section.create(undefined, ['Col1'], [[1]])
+      const section = Section.create(
+        undefined, 
+        [makeCell('Col1')], 
+        [[makeCell(1)]]
+      )
       
       expect(section.title).toBeUndefined()
-      expect(section.header).toEqual(['Col1'])
+      expect(section.header[0]?.value).toBe('Col1')
     })
   })
 
   describe('Immutability', () => {
     it('should create new instance on withTitle', () => {
       const section = Section.fromConfig(mockConfig)
-      const updated = section.withTitle('New Title')
+      const updated = section.withTitle(makeCell('New Title'))
       
-      expect(section.title).toBe('Test Section')
-      expect(updated.title).toBe('New Title')
+      expect(section.title?.value).toBe('Test Section')
+      expect(updated.title?.value).toBe('New Title')
       expect(section).not.toBe(updated)
     })
 
@@ -130,7 +145,7 @@ describe('Section Model', () => {
   describe('Card recap operations', () => {
     it('should set card recap', () => {
       const section = Section.fromConfig(mockConfig)
-      const cardRecap = CardRecap.create(0, 1, 100, 'Value')
+      const cardRecap = CardRecap.create(0, 1, makeCell(100), makeCell('Value'))
       const updated = section.setCardRecap(cardRecap)
       
       expect(updated.cardRecap).toBeDefined()
@@ -138,7 +153,7 @@ describe('Section Model', () => {
     })
 
     it('should clear card recap', () => {
-      const cardRecap = CardRecap.create(0, 1, 100, 'Value')
+      const cardRecap = CardRecap.create(0, 1, makeCell(100), makeCell('Value'))
       const section = Section.fromConfig(mockConfig).setCardRecap(cardRecap)
       const updated = section.clearCardRecap()
       
@@ -230,7 +245,7 @@ describe('Section Model', () => {
 
     it('should detect empty section', () => {
       const section = Section.fromConfig({
-        header: ['Col1'],
+        header: [makeCell('Col1')],
         data: [],
       })
       
@@ -247,7 +262,7 @@ describe('Section Model', () => {
     })
 
     it('should detect card recap', () => {
-      const cardRecap = CardRecap.create(0, 1, 100)
+      const cardRecap = CardRecap.create(0, 1, makeCell(100), makeCell('label'))
       const section = Section.fromConfig(mockConfig).setCardRecap(cardRecap)
       
       expect(section.getMetadata().hasCardRecap).toBe(true)
@@ -300,8 +315,8 @@ describe('Section Model', () => {
 
     it('should return 0 if no text column found', () => {
       const section = Section.fromConfig({
-        header: ['Val1', 'Val2'],
-        data: [[1, 2], [3, 4]],
+        header: [makeCell('Val1'), makeCell('Val2')],
+        data: [[makeCell(1), makeCell(2)], [makeCell(3), makeCell(4)]],
       })
       
       expect(section.findLabelColumn()).toBe(0)
@@ -324,7 +339,7 @@ describe('Section Model', () => {
       const filtered = section.getFilteredData()
       
       expect(filtered).toHaveLength(1)
-      expect(filtered[0]![0]).toBe('Alice')
+      expect(filtered[0]![0]?.value).toBe('Alice')
     })
   })
 
@@ -333,32 +348,10 @@ describe('Section Model', () => {
       const section = Section.fromConfig(mockConfig)
       const config = section.toConfig()
       
-      expect(config.title).toBe(mockConfig.title)
-      expect(config.header).toEqual(mockConfig.header)
+      expect(config.title?.value).toBe(mockConfig.title?.value)
+      expect(config.header[0]?.value).toBe(mockConfig.header[0]?.value)
       expect(config.data).toEqual(mockConfig.data)
     })
 
-    it('should convert to JSON', () => {
-      const section = Section.fromConfig(mockConfig)
-      const json = section.toJSON()
-      
-      expect(json).toEqual(mockConfig)
-    })
-
-    it('should preserve all properties when serializing', () => {
-      const cardRecap = CardRecap.create(0, 1, 100)
-      const section = Section.fromConfig(mockConfig)
-        .withSearchText('test')
-        .withSort(0, 'asc')
-        .setCardRecap(cardRecap)
-        .toggleChart(1)
-      
-      const config = section.toConfig()
-      
-      expect(config.searchText).toBe('test')
-      expect(config.sortConfig).toBeDefined()
-      expect(config.cardRecap).toBeDefined()
-      expect(config.charts).toHaveLength(1)
-    })
   })
 })

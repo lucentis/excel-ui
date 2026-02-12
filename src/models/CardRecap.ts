@@ -5,7 +5,7 @@ import type {
   ColumnIndex,
 } from '@/types'
 import { DEFAULT_CARD_STYLE } from '@/types/models/card'
-import type { CellValue } from 'exceljs'
+import type { Cell, CellValue } from 'exceljs'
 
 /**
  * CardRecap Model
@@ -22,7 +22,7 @@ export class CardRecap {
     rowIndex: RowIndex,
     colIndex: ColumnIndex,
     value: CellValue,
-    label?: string,
+    label: Cell,
   ): CardRecap {
     return new CardRecap({
       rowIndex,
@@ -56,8 +56,8 @@ export class CardRecap {
     return this.config.value
   }
 
-  get label(): string | undefined {
-    return this.config.label
+  get label(): Cell {
+    return this.config.label!
   }
 
   get unit(): string | undefined {
@@ -80,7 +80,7 @@ export class CardRecap {
   // Business logic
   // ============================================================================
 
-  withLabel(label: string): CardRecap {
+  withLabel(label: Cell): CardRecap {
     return new CardRecap({ ...this.config, label })
   }
 

@@ -26,8 +26,6 @@ class FormulaEngine {
       const sheetData = rawData.map(row =>
         row.map(cell => this.extractCellValue(cell as Cell))
       )
-
-      console.log(sheetData);
       
       sheetsData[sheetName] = sheetData
     })

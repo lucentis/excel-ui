@@ -22,7 +22,7 @@ export class FilterService {
     return row.some(cell => {
       if (cell === null || cell === undefined) return false
       
-      return String(cell).toLowerCase().includes(search)
+      return String(cell.value).toLowerCase().includes(search)
     })
   }
 
@@ -42,12 +42,12 @@ export class FilterService {
    */
   // services/FilterService.ts
   private static compareValues(a: Cell, b: Cell, direction: 'asc' | 'desc'): number {
-    let valueA = a.result ?? a.value ?? a
-    let valueB = b.result ?? b.value ?? b
+    let valueA = a.result ?? a.value ?? null
+    let valueB = b.result ?? b.value ?? null
     
     // Handle null/undefined
-    if (valueA === null || valueA === undefined) return direction === 'asc' ? 1 : -1
-    if (valueB === null || valueB === undefined) return direction === 'asc' ? -1 : 1
+    if (valueA === null || valueA === undefined) return 1
+    if (valueB === null || valueB === undefined) return -1
 
     // Numbers
     if (typeof valueA === 'number' && typeof valueB === 'number') {

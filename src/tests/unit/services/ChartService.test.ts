@@ -2,14 +2,19 @@ import { describe, it, expect } from 'vitest'
 import { ChartService } from '@/services/ChartService'
 import { Chart } from '@/models'
 import type { SectionConfig, ChartConfig } from '@/types'
+import type { Cell } from 'exceljs'
+
+function makeCell(value: any): Cell {
+  return { value } as Cell
+}
 
 describe('ChartService', () => {
   const mockSection: SectionConfig = {
-    header: ['Name', 'Sales', 'Quantity', 'City'],
+    header: [makeCell('Name'), makeCell('Sales'), makeCell('Quantity'), makeCell('City')],
     data: [
-      ['Product A', 100, 5, 'Paris'],
-      ['Product B', 200, 10, 'London'],
-      ['Product C', 150, 8, 'Berlin'],
+      [makeCell('Product A'), makeCell(100), makeCell(5), makeCell('Paris')],
+      [makeCell('Product B'), makeCell(200), makeCell(10), makeCell('London')],
+      [makeCell('Product C'), makeCell(150), makeCell(8), makeCell('Berlin')],
     ],
   }
 
@@ -26,7 +31,7 @@ describe('ChartService', () => {
 
     it('should return false for empty section', () => {
       const emptySection: SectionConfig = {
-        header: ['Col1'],
+        header: [makeCell('Col1')],
         data: [],
       }
       expect(ChartService.isNumericColumn(emptySection, 0)).toBe(false)
@@ -40,8 +45,8 @@ describe('ChartService', () => {
 
     it('should return 0 if no text column found', () => {
       const numericSection: SectionConfig = {
-        header: ['Val1', 'Val2'],
-        data: [[1, 2], [3, 4]],
+        header: [makeCell('Val1'), makeCell('Val2')],
+        data: [[makeCell(1), makeCell(2)], [makeCell(3), makeCell(4)]],
       }
       expect(ChartService.findLabelColumn(numericSection)).toBe(0)
     })
@@ -82,8 +87,12 @@ describe('ChartService', () => {
 
     it('should handle non-numeric values as 0', () => {
       const sectionWithNaN: SectionConfig = {
-        header: ['Name', 'Value'],
-        data: [['A', 'text'], ['B', null], ['C', 100]],
+        header: [makeCell('Name'), makeCell('Value')],
+        data: [
+          [makeCell('A'), makeCell('text')], 
+          [makeCell('B'), makeCell(null)], 
+          [makeCell('C'), makeCell(100)]
+        ],
       }
       const chart = Chart.fromConfig({
         ...chartConfig,
@@ -156,7 +165,7 @@ describe('ChartService', () => {
     it('should return default label if header missing', () => {
       const sectionNoHeader: SectionConfig = {
         header: [],
-        data: [[1, 2]],
+        data: [[makeCell(1), makeCell(2)]],
       }
       const chart = Chart.fromConfig({
         columnIndex: 0,
@@ -182,8 +191,8 @@ describe('ChartService', () => {
 
     it('should use default label for missing headers', () => {
       const section: SectionConfig = {
-        header: [null as any, undefined as any],
-        data: [['text1', 'text2']],
+        header: [makeCell(null), makeCell(undefined)],
+        data: [[makeCell('text1'), makeCell('text2')]],
       }
       const candidates = ChartService.getLabelCandidateColumns(section)
       
@@ -233,15 +242,15 @@ describe('ChartService', () => {
         excludedRows: [],
         visible: true,
       })
-      const row = ['Product A', 100, 5, 'Paris']
+      const row = [makeCell('Product A'), makeCell(100), makeCell(5), makeCell('Paris')]
       const updated = ChartService.toggleRowExclusion(chart, row)
       
       expect(updated.excludedRows).toContain(row)
     })
 
     it('should remove row from exclusion list if already excluded', () => {
-      const row1 = ['Product A', 100, 5, 'Paris']
-      const row2 = ['Product B', 200, 10, 'London']
+      const row1 = [makeCell('Product A'), makeCell(100), makeCell(5), makeCell('Paris')]
+      const row2 = [makeCell('Product B'), makeCell(200), makeCell(10), makeCell('London')]
       const chart = Chart.fromConfig({
         columnIndex: 0,
         labelColumnIndex: 0,

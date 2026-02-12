@@ -12,6 +12,7 @@ import type {
 import { DEFAULT_SECTION_STYLE } from '@/types/models/section'
 import { Chart } from './Chart'
 import { CardRecap } from './CardRecap'
+import type { Cell } from 'exceljs'
 
 /**
  * Section Model
@@ -24,7 +25,7 @@ export class Section {
   // Factory methods
   // ============================================================================
 
-  static create(title: string | undefined, header: RowData, data: DataMatrix): Section {
+  static create(title: Cell | undefined, header: RowData, data: DataMatrix): Section {
     return new Section({
       title,
       header,
@@ -46,11 +47,11 @@ export class Section {
   // Getters
   // ============================================================================
 
-  get title(): string | undefined {
+  get title(): Cell | undefined {
     return this.config.title
   }
 
-  get header(): ReadonlyArray<unknown> {
+  get header(): ReadonlyArray<Cell> {
     return this.config.header
   }
 
@@ -86,7 +87,7 @@ export class Section {
   // Business logic
   // ============================================================================
 
-  withTitle(title: string): Section {
+  withTitle(title: Cell): Section {
     return new Section({ ...this.config, title })
   }
 
@@ -196,7 +197,7 @@ export class Section {
     const label = String(this.config.header[columnIndex] || `Col ${columnIndex + 1}`)
     const values = this.config.data.map(row => row[columnIndex])
     const isNumeric = values.every(v => typeof v === 'number' || v == null)
-    const isEmpty = values.every(v => v == null || v === '')
+    const isEmpty = values.every(v => v == null || v.value === '')
 
     let type: ColumnInfo['type'] = 'mixed'
     if (isEmpty) {

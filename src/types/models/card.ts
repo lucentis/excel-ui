@@ -2,7 +2,7 @@
  * Types relatifs aux cartes récapitulatives
  */
 
-import type { CellValue } from 'exceljs'
+import type { Cell, CellValue } from 'exceljs'
 import type { RowIndex, ColumnIndex } from '../common/base'
 
 /**
@@ -106,7 +106,7 @@ export interface CardRecapConfig {
   value: CellValue
   
   /** Label de la carte */
-  label?: string
+  label: Cell
   
   /** Unité (optionnel: €, %, etc.) */
   unit?: string

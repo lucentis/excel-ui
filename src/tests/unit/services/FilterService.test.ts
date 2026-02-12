@@ -1,15 +1,20 @@
 import { describe, it, expect } from 'vitest'
 import { FilterService } from '@/services/FilterService'
 import type { SectionConfig } from '@/types'
+import type { Cell } from 'exceljs'
+
+function makeCell(value: any): Cell {
+  return { value } as Cell
+}
 
 describe('FilterService', () => {
   const mockSection: SectionConfig = {
-    header: ['Name', 'Age', 'City'],
+    header: [makeCell('Name'), makeCell('Age'), makeCell('City')],
     data: [
-      ['Alice', 30, 'Paris'],
-      ['Bob', 25, 'London'],
-      ['Charlie', 35, 'Paris'],
-      ['David', 28, 'Berlin'],
+      [makeCell('Alice'), makeCell(30), makeCell('Paris')],
+      [makeCell('Bob'), makeCell(25), makeCell('London')],
+      [makeCell('Charlie'), makeCell(35), makeCell('Paris')],
+      [makeCell('David'), makeCell(28), makeCell('Berlin')],
     ],
   }
 
@@ -26,8 +31,8 @@ describe('FilterService', () => {
       }
       const result = FilterService.filterSectionData(section)
       expect(result).toHaveLength(2)
-      expect(result[0]).toEqual(['Alice', 30, 'Paris'])
-      expect(result[1]).toEqual(['Charlie', 35, 'Paris'])
+      expect(result[0]).toEqual([makeCell('Alice'), makeCell(30), makeCell('Paris')])
+      expect(result[1]).toEqual([makeCell('Charlie'), makeCell(35), makeCell('Paris')])
     })
 
     it('should search across all columns', () => {
@@ -37,7 +42,7 @@ describe('FilterService', () => {
       }
       const result = FilterService.filterSectionData(section)
       expect(result).toHaveLength(1)
-      expect(result[0]).toEqual(['Alice', 30, 'Paris'])
+      expect(result[0]).toEqual([makeCell('Alice'), makeCell(30), makeCell('Paris')])
     })
 
     it('should return empty array when no matches', () => {
@@ -61,10 +66,10 @@ describe('FilterService', () => {
         columnIndex: 0,
         direction: 'asc',
       })
-      expect(result[0]![0]).toBe('Alice')
-      expect(result[1]![0]).toBe('Bob')
-      expect(result[2]![0]).toBe('Charlie')
-      expect(result[3]![0]).toBe('David')
+      expect(result[0]![0]?.value).toBe('Alice')
+      expect(result[1]![0]?.value).toBe('Bob')
+      expect(result[2]![0]?.value).toBe('Charlie')
+      expect(result[3]![0]?.value).toBe('David')
     })
 
     it('should sort strings descending', () => {
@@ -72,10 +77,10 @@ describe('FilterService', () => {
         columnIndex: 0,
         direction: 'desc',
       })
-      expect(result[0]![0]).toBe('David')
-      expect(result[1]![0]).toBe('Charlie')
-      expect(result[2]![0]).toBe('Bob')
-      expect(result[3]![0]).toBe('Alice')
+      expect(result[0]![0]?.value).toBe('David')
+      expect(result[1]![0]?.value).toBe('Charlie')
+      expect(result[2]![0]?.value).toBe('Bob')
+      expect(result[3]![0]?.value).toBe('Alice')
     })
 
     it('should sort numbers ascending', () => {
@@ -83,10 +88,10 @@ describe('FilterService', () => {
         columnIndex: 1,
         direction: 'asc',
       })
-      expect(result[0]![1]).toBe(25)
-      expect(result[1]![1]).toBe(28)
-      expect(result[2]![1]).toBe(30)
-      expect(result[3]![1]).toBe(35)
+      expect(result[0]![1]?.value).toBe(25)
+      expect(result[1]![1]?.value).toBe(28)
+      expect(result[2]![1]?.value).toBe(30)
+      expect(result[3]![1]?.value).toBe(35)
     })
 
     it('should sort numbers descending', () => {
@@ -94,28 +99,30 @@ describe('FilterService', () => {
         columnIndex: 1,
         direction: 'desc',
       })
-      expect(result[0]![1]).toBe(35)
-      expect(result[1]![1]).toBe(30)
-      expect(result[2]![1]).toBe(28)
-      expect(result[3]![1]).toBe(25)
+      expect(result[0]![1]?.value).toBe(35)
+      expect(result[1]![1]?.value).toBe(30)
+      expect(result[2]![1]?.value).toBe(28)
+      expect(result[3]![1]?.value).toBe(25)
     })
 
     it('should handle null/undefined values', () => {
       const dataWithNulls = [
-        ['Alice', 30],
-        ['Bob', null],
-        ['Charlie', undefined],
-        ['David', 25],
+        [makeCell('Alice'), makeCell(30)],
+        [makeCell('Bob'), makeCell(null)],
+        [makeCell('Charlie'), makeCell(undefined)],
+        [makeCell('David'), makeCell(25)],
       ]
       const result = FilterService.sortSectionData(dataWithNulls, {
         columnIndex: 1,
         direction: 'asc',
       })
+
+      console.log(result)
       // Nulls should be at the end
-      expect(result[0]![1]).toBe(25)
-      expect(result[1]![1]).toBe(30)
-      expect(result[2]![1]).toBe(null)
-      expect(result[3]![1]).toBe(undefined)
+      expect(result[0]![1]?.value).toBe(25)
+      expect(result[1]![1]?.value).toBe(30)
+      expect(result[2]![1]?.value).toBe(null)
+      expect(result[3]![1]?.value).toBe(undefined)
     })
   })
 
@@ -131,8 +138,8 @@ describe('FilterService', () => {
       }
       const result = FilterService.applyFiltersAndSort(section)
       expect(result).toHaveLength(2)
-      expect(result[0]![0]).toBe('Charlie') // Age 35
-      expect(result[1]![0]).toBe('Alice')   // Age 30
+      expect(result[0]![0]?.value).toBe('Charlie') // Age 35
+      expect(result[1]![0]?.value).toBe('Alice')   // Age 30
     })
 
     it('should return all data sorted when no search', () => {
@@ -145,7 +152,7 @@ describe('FilterService', () => {
       }
       const result = FilterService.applyFiltersAndSort(section)
       expect(result).toHaveLength(4)
-      expect(result[0]![0]).toBe('Alice')
+      expect(result[0]![0]?.value).toBe('Alice')
     })
 
     it('should return filtered data unsorted when no sort config', () => {

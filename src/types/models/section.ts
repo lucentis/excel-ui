@@ -5,6 +5,7 @@
 import type { DataMatrix, RowData } from '../common/base'
 import type { ChartConfig } from './chart'
 import type { CardRecapConfig } from './card'
+import type { Cell } from 'exceljs'
 
 /**
  * Sort direction
@@ -87,7 +88,7 @@ export const DEFAULT_SECTION_STYLE: SectionStyleConfig = {
  */
 export interface SectionConfig {
   /** Optional section title */
-  title?: string
+  title?: Cell
   
   /** Column headers */
   header: RowData

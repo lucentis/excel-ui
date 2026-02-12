@@ -30,7 +30,7 @@ export class ExcelParser {
    * Check if a row is completely empty
    */
   static isEmptyRow(row: RowData): boolean {
-    return row.every(cell => cell === null || cell === undefined || cell.value === '')
+    return row.every(cell => (cell === null || cell === undefined || cell.value === '' || cell.value === null || cell.value === undefined))
   }
 
   /**
@@ -38,6 +38,6 @@ export class ExcelParser {
    */
   static countFilledCells(row: RowData | undefined): number {
     if (!row) return 0
-    return row.filter(cell => cell !== null && cell !== undefined).length
+    return row.filter(cell => (cell !== null && cell !== undefined && cell.value !== '' && cell.value !== null && cell.value !== undefined)).length
   }
 }
