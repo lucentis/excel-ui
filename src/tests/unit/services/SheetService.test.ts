@@ -2,23 +2,31 @@ import { describe, it, expect } from 'vitest'
 import { SheetService } from '@/services/SheetService'
 import { Sheet, Section } from '@/models'
 import type { DataMatrix } from '@/types'
+import type { Cell } from 'exceljs'
+
+function makeCell(value: any): Cell {
+  return { value } as Cell
+}
 
 describe('SheetService', () => {
   const mockData: DataMatrix = [
-    ['Document Title'],
+    [makeCell('Document Title')],
     [],
-    ['Section 1'],
-    ['Name', 'Value'],
-    ['Alice', 100],
+    [makeCell('Section 1')],
+    [makeCell('Name'), makeCell('Value')],
+    [makeCell('Alice'), makeCell(100)],
   ]
 
   const mockSections = [
-    Section.create('Section 1', ['Name', 'Value'], [['Alice', 100]])
+    Section.create(
+      makeCell('Section 1'), 
+      [makeCell('Name'), makeCell('Value')], 
+      [[makeCell('Alice'), makeCell(100)]]
+    )
   ]
 
   describe('buildSheet', () => {
     it('should build sheet from worksheet', () => {
-      // Mock worksheet
       const mockWorksheet: any = {
         eachRow: (options: any, callback: Function) => {
           mockData.forEach((row, index) => {
@@ -40,10 +48,10 @@ describe('SheetService', () => {
       const sheet = Sheet.create('Test', null, mockData, 'Title', mockSections)
       
       const updated = SheetService.updateSection(sheet, 0, section =>
-        section.withTitle('New Title')
+        section.withTitle(makeCell('New Title'))
       )
 
-      expect(updated.getSection(0)?.title).toBe('New Title')
+      expect(updated.getSection(0)?.title?.value).toBe('New Title')
     })
 
     it('should not mutate original sheet', () => {
@@ -76,7 +84,7 @@ describe('SheetService', () => {
       const section = SheetService.getSection(sheet, 0)
       
       expect(section).toBeDefined()
-      expect(section?.title).toBe('Section 1')
+      expect(section?.title?.value).toBe('Section 1')
     })
 
     it('should return undefined for invalid index', () => {
@@ -90,8 +98,8 @@ describe('SheetService', () => {
   describe('Integration scenarios', () => {
     it('should handle multiple section updates', () => {
       const sections = [
-        Section.create('Section 1', ['A'], [['1']]),
-        Section.create('Section 2', ['B'], [['2']]),
+        Section.create(makeCell('Section 1'), [makeCell('A')], [[makeCell('1')]]),
+        Section.create(makeCell('Section 2'), [makeCell('B')], [[makeCell('2')]]),
       ]
 
       const sheet = Sheet.create('Test', null, [[]], '', sections)
@@ -108,18 +116,18 @@ describe('SheetService', () => {
 
     it('should preserve other sections when updating one', () => {
       const sections = [
-        Section.create('Section 1', ['A'], [['1']]),
-        Section.create('Section 2', ['B'], [['2']]),
+        Section.create(makeCell('Section 1'), [makeCell('A')], [[makeCell('1')]]),
+        Section.create(makeCell('Section 2'), [makeCell('B')], [[makeCell('2')]]),
       ]
 
       const sheet = Sheet.create('Test', null, [[]], '', sections)
       
       const updated = SheetService.updateSection(sheet, 0, s =>
-        s.withTitle('Updated')
+        s.withTitle(makeCell('Updated'))
       )
 
-      expect(updated.getSection(0)?.title).toBe('Updated')
-      expect(updated.getSection(1)?.title).toBe('Section 2')
+      expect(updated.getSection(0)?.title?.value).toBe('Updated')
+      expect(updated.getSection(1)?.title?.value).toBe('Section 2')
     })
   })
 })
@@ -127,12 +135,12 @@ describe('SheetService', () => {
 /**
  * Helper to create mock ExcelJS row
  */
-function createMockRow(cellValues: any[], rowNumber: number) {
+function createMockRow(cellValues: Cell[], rowNumber: number) {
   const cells: any[] = []
   
-  cellValues.forEach((value, index) => {
+  cellValues.forEach((cell, index) => {
     cells.push({
-      value,
+      value: cell.value,
       col: index + 1,
       row: rowNumber,
     })

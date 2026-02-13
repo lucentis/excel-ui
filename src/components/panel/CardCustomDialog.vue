@@ -64,17 +64,17 @@ const previewValue = computed(() => {
   if (!cardRecap.value) return '1,234'
   
   const value = cardRecap.value.value
-  if (typeof value !== 'number') return String(value)
+  if (typeof value.value !== 'number') return String(value)
 
   switch (valueFormat.value) {
     case 'integer':
-      return Math.round(value).toLocaleString('fr-FR')
+      return Math.round(value.value).toLocaleString('fr-FR')
     case 'percentage':
-      return `${value.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}%`
+      return `${value.value.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}%`
     case 'currency':
-      return `${value.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} ${customUnit.value}`
+      return `${value.value.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} ${customUnit.value}`
     default:
-      return value.toLocaleString('fr-FR', { maximumFractionDigits: 2 })
+      return value.value.toLocaleString('fr-FR', { maximumFractionDigits: 2 })
   }
 })
 

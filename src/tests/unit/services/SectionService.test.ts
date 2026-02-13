@@ -1,14 +1,19 @@
 import { describe, it, expect } from 'vitest'
 import { SectionService } from '@/services/SectionService'
 import { Section } from '@/models'
+import type { Cell } from 'exceljs'
+
+function makeCell(value: any): Cell {
+  return { value } as Cell
+}
 
 describe('SectionService', () => {
   const mockSection = Section.create(
-    'Test Section',
-    ['Name', 'Value', 'Quantity'],
+    makeCell('Test Section') as Cell,
+    [makeCell('Name'), makeCell('Value'), makeCell('Quantity')],
     [
-      ['Product A', 100, 5],
-      ['Product B', 200, 10],
+      [makeCell('Product A'), makeCell(100), makeCell(5)],
+      [makeCell('Product B'), makeCell(200), makeCell(10)],
     ]
   )
 
@@ -17,8 +22,8 @@ describe('SectionService', () => {
       const updated = SectionService.setCardRecap(mockSection, 0, 1)
       
       expect(updated.cardRecap).toBeDefined()
-      expect(updated.cardRecap?.value).toBe(100)
-      expect(updated.cardRecap?.label).toBe('Value')
+      expect(updated.cardRecap?.value.value).toBe(100)
+      expect(updated.cardRecap?.label.value).toBe('Value')
     })
 
     it('should not mutate original section', () => {
@@ -77,7 +82,7 @@ describe('SectionService', () => {
   describe('toggleRowExclusion', () => {
     it('should exclude row from all visible charts', () => {
       const withChart = SectionService.toggleChart(mockSection, 1)
-      const row = ['Product A', 100, 5]
+      const row = [makeCell('Product A'), makeCell(100), makeCell(5)]
       const updated = SectionService.toggleRowExclusion(withChart, row)
       
       const chart = updated.getChart(1)
@@ -86,7 +91,7 @@ describe('SectionService', () => {
 
     it('should toggle exclusion', () => {
       const withChart = SectionService.toggleChart(mockSection, 1)
-      const row = ['Product A', 100, 5]
+      const row = [makeCell('Product A'), makeCell(100), makeCell(5)]
       const excluded = SectionService.toggleRowExclusion(withChart, row)
       const included = SectionService.toggleRowExclusion(excluded, row)
       
@@ -99,7 +104,7 @@ describe('SectionService', () => {
         .toggleChart(1)
         .toggleChart(2)
       
-      const row = ['Product A', 100, 5]
+      const row = [makeCell('Product A'), makeCell(100), makeCell(5)]
       const updated = SectionService.toggleRowExclusion(withCharts, row)
       
       expect(updated.getChart(1)?.isRowExcluded(row)).toBe(true)

@@ -1,18 +1,27 @@
 import { describe, it, expect } from 'vitest'
 import { Sheet, Section } from '@/models'
 import type { SheetConfig, DataMatrix } from '@/types'
+import type { Cell } from 'exceljs'
+
+function makeCell(value: any): Cell {
+  return { value } as Cell
+}
 
 describe('Sheet Model', () => {
   const mockData: DataMatrix = [
-    ['Document Title'],
+    [makeCell('Document Title')],
     [],
-    ['Section 1'],
-    ['Name', 'Value'],
-    ['Alice', 100],
+    [makeCell('Section 1')],
+    [makeCell('Name'), makeCell('Value')],
+    [makeCell('Alice'), makeCell(100)],
   ]
 
   const mockSections = [
-    Section.create('Section 1', ['Name', 'Value'], [['Alice', 100]])
+    Section.create(
+      makeCell('Section 1'), 
+      [makeCell('Name'), makeCell('Value')], 
+      [[makeCell('Alice'), makeCell(100)]]
+    )
   ]
 
   describe('Factory methods', () => {
@@ -37,6 +46,8 @@ describe('Sheet Model', () => {
         rawData: mockData,
         title: 'Document Title',
         sections: [mockSections[0]!.toConfig()],
+        currentCell: null,
+        editionMode: false
       }
 
       const sheet = Sheet.fromConfig(config)
@@ -79,11 +90,11 @@ describe('Sheet Model', () => {
       const sheet = Sheet.create('Test', null, mockData, 'Title', mockSections)
       
       const updated = sheet.updateSection(0, section =>
-        section.withTitle('New Title')
+        section.withTitle(makeCell('New Title'))
       )
 
-      expect(sheet.sections[0]!.title).toBe('Section 1')
-      expect(updated.sections[0]!.title).toBe('New Title')
+      expect(sheet.sections[0]!.title?.value).toBe('Section 1')
+      expect(updated.sections[0]!.title?.value).toBe('New Title')
     })
 
     it('should get section by index', () => {
@@ -91,7 +102,7 @@ describe('Sheet Model', () => {
       const section = sheet.getSection(0)
       
       expect(section).toBeDefined()
-      expect(section?.title).toBe('Section 1')
+      expect(section?.title?.value).toBe('Section 1')
     })
 
     it('should return undefined for invalid index', () => {
@@ -101,10 +112,10 @@ describe('Sheet Model', () => {
 
     it('should not mutate original on update', () => {
       const sheet = Sheet.create('Test', null, mockData, 'Title', mockSections)
-      const updated = sheet.updateSection(0, s => s.withTitle('Changed'))
+      const updated = sheet.updateSection(0, s => s.withTitle(makeCell('Changed')))
       
       expect(sheet).not.toBe(updated)
-      expect(sheet.sections[0]!.title).toBe('Section 1')
+      expect(sheet.sections[0]!.title?.value).toBe('Section 1')
     })
   })
 
@@ -182,28 +193,28 @@ describe('Sheet Model', () => {
   describe('Complex scenarios', () => {
     it('should handle multiple sections', () => {
       const sections = [
-        Section.create('Section 1', ['A'], [['1']]),
-        Section.create('Section 2', ['B'], [['2']]),
-        Section.create('Section 3', ['C'], [['3']]),
+        Section.create(makeCell('Section 1'), [makeCell('A')], [[makeCell('1')]]),
+        Section.create(makeCell('Section 2'), [makeCell('B')], [[makeCell('2')]]),
+        Section.create(makeCell('Section 3'), [makeCell('C')], [[makeCell('3')]]),
       ]
 
       const sheet = Sheet.create('Test', null, [[]], '', sections)
       
       expect(sheet.getSectionCount()).toBe(3)
-      expect(sheet.getSection(1)?.title).toBe('Section 2')
+      expect(sheet.getSection(1)?.title?.value).toBe('Section 2')
     })
 
     it('should update specific section without affecting others', () => {
       const sections = [
-        Section.create('Section 1', ['A'], [['1']]),
-        Section.create('Section 2', ['B'], [['2']]),
+        Section.create(makeCell('Section 1'), [makeCell('A')], [[makeCell('1')]]),
+        Section.create(makeCell('Section 2'), [makeCell('B')], [[makeCell('2')]]),
       ]
 
       const sheet = Sheet.create('Test', null, [[]], '', sections)
-      const updated = sheet.updateSection(0, s => s.withTitle('Updated'))
+      const updated = sheet.updateSection(0, s => s.withTitle(makeCell('Updated')))
       
-      expect(updated.getSection(0)?.title).toBe('Updated')
-      expect(updated.getSection(1)?.title).toBe('Section 2')
+      expect(updated.getSection(0)?.title?.value).toBe('Updated')
+      expect(updated.getSection(1)?.title?.value).toBe('Section 2')
     })
   })
 })

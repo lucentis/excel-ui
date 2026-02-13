@@ -291,8 +291,6 @@ describe('Section Model', () => {
     it('should detect numeric columns', () => {
       const section = Section.fromConfig(mockConfig)
       const numericCols = section.getNumericColumns()
-
-      console.log(section, mockConfig, numericCols)
       
       expect(numericCols).toHaveLength(1)
       expect(numericCols[0]!.index).toBe(1)

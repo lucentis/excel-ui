@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { Chart } from '@/models'
 import type { ChartConfig } from '@/types'
+import type { Cell } from 'exceljs'
+
+function makeCell(value: any): Cell {
+  return { value } as Cell
+}
 
 describe('Chart Model', () => {
   const mockConfig: ChartConfig = {
@@ -101,9 +106,9 @@ describe('Chart Model', () => {
   })
 
   describe('Row exclusion operations', () => {
-    const row1 = ['Product A', 100]
-    const row2 = ['Product B', 200]
-    const row3 = ['Product C', 150]
+    const row1 = [makeCell('Product A'), makeCell(100)]
+    const row2 = [makeCell('Product A'), makeCell(200)]
+    const row3 = [makeCell('Product A'), makeCell(150)]
 
     it('should exclude row', () => {
       const chart = Chart.fromConfig(mockConfig)
@@ -155,9 +160,9 @@ describe('Chart Model', () => {
   })
 
   describe('Query methods', () => {
-    const row1 = ['Product A', 100]
-    const row2 = ['Product B', 200]
-    const row3 = ['Product C', 150]
+    const row1 = [makeCell('Product A'), makeCell(100)]
+    const row2 = [makeCell('Product B'), makeCell(200)]
+    const row3 = [makeCell('Product C'), makeCell(150)]
 
     it('should check if row is excluded', () => {
       const chart = Chart.fromConfig({
@@ -192,7 +197,7 @@ describe('Chart Model', () => {
   })
 
   describe('Serialization', () => {
-    const row1 = ['Product A', 100]
+    const row1 = [makeCell('Product A'), makeCell(100)]
 
     it('should convert to config', () => {
       const chart = Chart.fromConfig(mockConfig)

@@ -116,8 +116,7 @@ describe('FilterService', () => {
         columnIndex: 1,
         direction: 'asc',
       })
-
-      console.log(result)
+      
       // Nulls should be at the end
       expect(result[0]![1]?.value).toBe(25)
       expect(result[1]![1]?.value).toBe(30)
