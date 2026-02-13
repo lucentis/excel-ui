@@ -85,7 +85,7 @@ export class ChartService {
       .map((row, index): ChartDataPoint => ({
         index,
         name: String(row[chart.labelColumnIndex]?.value || ''),
-        value: Number(row[chart.columnIndex]?.value) || 0,
+        value: Number(row[chart.columnIndex]?.result ?? row[chart.columnIndex]?.value) || 0,
       }))
 
     // Calculate percentages
