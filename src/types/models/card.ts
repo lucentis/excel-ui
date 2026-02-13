@@ -103,7 +103,7 @@ export interface CardRecapConfig {
   colIndex: ColumnIndex
   
   /** Valeur à afficher */
-  value: CellValue
+  value: Cell
   
   /** Label de la carte */
   label: Cell

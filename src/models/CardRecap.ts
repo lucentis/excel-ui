@@ -21,7 +21,7 @@ export class CardRecap {
   static create(
     rowIndex: RowIndex,
     colIndex: ColumnIndex,
-    value: CellValue,
+    value: Cell,
     label: Cell,
   ): CardRecap {
     return new CardRecap({
@@ -52,7 +52,7 @@ export class CardRecap {
     return this.config.colIndex
   }
 
-  get value(): CellValue {
+  get value(): Cell {
     return this.config.value
   }
 
@@ -112,18 +112,18 @@ export class CardRecap {
   // ============================================================================
 
   isNumeric(): boolean {
-    return typeof this.config.value === 'number'
+    return typeof this.config.value.value === 'number'
   }
 
   isEmpty(): boolean {
-    return this.config.value === null || this.config.value === undefined || this.config.value === ''
+    return this.config.value.value === null || this.config.value.value === undefined || this.config.value.value === ''
   }
 
   getValueType(): 'number' | 'text' | 'date' | 'boolean' | 'empty' {
     if (this.isEmpty()) return 'empty'
-    if (typeof this.config.value === 'number') return 'number'
-    if (typeof this.config.value === 'boolean') return 'boolean'
-    if (this.config.value instanceof Date) return 'date'
+    if (typeof this.config.value.value === 'number') return 'number'
+    if (typeof this.config.value.value === 'boolean') return 'boolean'
+    if (this.config.value.value instanceof Date) return 'date'
     return 'text'
   }
 
@@ -135,8 +135,7 @@ export class CardRecap {
     if (this.isEmpty()) return '-'
 
 
-    const value = (this.config.value as any).value ?? this.config.value
-    
+    const value = this.config.value.value
     const valueFormat = this.style.valueFormat.type
     const customUnit = this.style.valueFormat.customUnit
 
@@ -164,7 +163,7 @@ export class CardRecap {
       return value ? 'Oui' : 'Non'
     }
 
-    return String(this.config.value)
+    return String(this.config.value.result ?? this.config.value.value)
   }
 
   // ============================================================================

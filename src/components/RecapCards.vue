@@ -11,7 +11,7 @@ const cardsData = computed(() => {
       const cardRecap = CardRecap.fromConfig(section.cardRecap!)
       return {
         title: section.title || section.cardRecap?.label,
-        label: section.cardRecap?.label || 'Valeur',
+        label: cardRecap.label || 'Valeur',
         value: cardRecap.value,
         formattedValue: cardRecap.formatValue(),
         style: cardRecap.style,
