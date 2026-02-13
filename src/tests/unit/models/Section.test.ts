@@ -22,9 +22,9 @@ describe('Section Model', () => {
     it('should create from config', () => {
       const section = Section.fromConfig(mockConfig)
       
-      expect(section.title).toBe('Test Section')
-      expect(section.header[0]?.value).toBe('Name')
-      expect(section.header[1]?.value).toBe('Value')
+      expect(section.title).toEqual({value: 'Test Section'})
+      expect(section.header[0]?.value).toEqual('Name')
+      expect(section.header[1]?.value).toEqual('Value')
       expect(section.data).toHaveLength(2)
     })
 
@@ -149,7 +149,7 @@ describe('Section Model', () => {
       const updated = section.setCardRecap(cardRecap)
       
       expect(updated.cardRecap).toBeDefined()
-      expect(updated.cardRecap?.value).toBe(100)
+      expect(updated.cardRecap?.value).toEqual({value: 100})
     })
 
     it('should clear card recap', () => {
@@ -291,6 +291,8 @@ describe('Section Model', () => {
     it('should detect numeric columns', () => {
       const section = Section.fromConfig(mockConfig)
       const numericCols = section.getNumericColumns()
+
+      console.log(section, mockConfig, numericCols)
       
       expect(numericCols).toHaveLength(1)
       expect(numericCols[0]!.index).toBe(1)

@@ -194,21 +194,21 @@ export class Section {
   }
 
   getColumnInfo(columnIndex: ColumnIndex): ColumnInfo {
-    const label = String(this.config.header[columnIndex] || `Col ${columnIndex + 1}`)
+    const label = String(this.config.header[columnIndex]?.value || `Col ${columnIndex + 1}`)
     const values = this.config.data.map(row => row[columnIndex])
-    const isNumeric = values.every(v => typeof v === 'number' || v == null)
-    const isEmpty = values.every(v => v == null || v.value === '')
+    const isNumeric = values.every(v => typeof v?.value === 'number' || v?.value == null)
+    const isEmpty = values.every(v => v?.value == null || v?.value === '')
 
     let type: ColumnInfo['type'] = 'mixed'
     if (isEmpty) {
       type = 'empty'
     } else if (isNumeric) {
       type = 'number'
-    } else if (values.every(v => typeof v === 'string' || v == null)) {
+    } else if (values.every(v => typeof v?.value === 'string' || v?.value == null)) {
       type = 'text'
-    } else if (values.every(v => v instanceof Date || v == null)) {
+    } else if (values.every(v => v?.value instanceof Date || v?.value == null)) {
       type = 'date'
-    } else if (values.every(v => typeof v === 'boolean' || v == null)) {
+    } else if (values.every(v => typeof v?.value === 'boolean' || v?.value == null)) {
       type = 'boolean'
     }
 
@@ -263,8 +263,8 @@ export class Section {
     const search = this.config.searchText.toLowerCase()
     return this.config.data.filter(row => 
       row.some(cell => {
-        if (cell == null) return false
-        return String(cell).toLowerCase().includes(search)
+        if (cell.value == null) return false
+        return String(cell.value).toLowerCase().includes(search)
       })
     )
   }
