@@ -71,8 +71,8 @@ export function getSectionTitleSizeClass(size: SectionTitleSize): string {
  */
 export function getChartPositionClass(position: ChartPosition): string {
   switch (position) {
-    case 'left': return 'flex-row items-start'
-    case 'right': return 'flex-row-reverse items-start'
+    case 'left': return 'flex-row-reverse items-start'
+    case 'right': return 'flex-row items-start'
     case 'top': return 'flex-col-reverse'
     case 'bottom': return 'flex-col'
     default: return 'flex-row-reverse items-start'
