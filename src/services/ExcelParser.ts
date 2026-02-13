@@ -1,5 +1,7 @@
 import type { Worksheet } from 'exceljs'
 import type { DataMatrix, RowData } from '@/types'
+import type { Cell } from 'exceljs'
+import { CellHelper } from './CellHelper'
 
 /**
  * ExcelParser
@@ -27,17 +29,17 @@ export class ExcelParser {
   }
 
   /**
-   * Check if a row is completely empty
+   * Check if a row is completely empty - REFACTORED with CellHelper
    */
   static isEmptyRow(row: RowData): boolean {
-    return row.every(cell => (cell === null || cell === undefined || cell.value === '' || cell.value === null || cell.value === undefined))
+    return row.every(cell => CellHelper.isEmpty(cell as Cell))
   }
 
   /**
-   * Count filled cells in a row
+   * Count filled cells in a row - REFACTORED with CellHelper
    */
   static countFilledCells(row: RowData | undefined): number {
     if (!row) return 0
-    return row.filter(cell => (cell !== null && cell !== undefined && cell.value !== '' && cell.value !== null && cell.value !== undefined)).length
+    return row.filter(cell => !CellHelper.isEmpty(cell as Cell)).length
   }
 }

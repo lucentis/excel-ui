@@ -5,7 +5,8 @@ import type {
   ColumnIndex,
 } from '@/types'
 import { DEFAULT_CARD_STYLE } from '@/types/models/card'
-import type { Cell, CellValue } from 'exceljs'
+import type { Cell } from 'exceljs'
+import { CellHelper } from '@/services/CellHelper'
 
 /**
  * CardRecap Model
@@ -108,34 +109,36 @@ export class CardRecap {
   }
 
   // ============================================================================
-  // Query methods
+  // Query methods - REFACTORED with CellHelper
   // ============================================================================
 
   isNumeric(): boolean {
-    return typeof this.config.value.value === 'number'
+    return CellHelper.isNumeric(this.config.value)
   }
 
   isEmpty(): boolean {
-    return this.config.value.value === null || this.config.value.value === undefined || this.config.value.value === ''
+    return CellHelper.isEmpty(this.config.value)
   }
 
   getValueType(): 'number' | 'text' | 'date' | 'boolean' | 'empty' {
     if (this.isEmpty()) return 'empty'
-    if (typeof this.config.value.value === 'number') return 'number'
-    if (typeof this.config.value.value === 'boolean') return 'boolean'
-    if (this.config.value.value instanceof Date) return 'date'
+    
+    const displayValue = CellHelper.getDisplayValue(this.config.value)
+    
+    if (typeof displayValue === 'number') return 'number'
+    if (typeof displayValue === 'boolean') return 'boolean'
+    if (displayValue instanceof Date) return 'date'
     return 'text'
   }
 
   // ============================================================================
-  // Formatting
+  // Formatting - REFACTORED with CellHelper
   // ============================================================================
 
   formatValue(): string {
     if (this.isEmpty()) return '-'
 
-
-    const value = this.config.value.value
+    const value = CellHelper.getDisplayValue(this.config.value)
     const valueFormat = this.style.valueFormat.type
     const customUnit = this.style.valueFormat.customUnit
 
@@ -163,7 +166,7 @@ export class CardRecap {
       return value ? 'Oui' : 'Non'
     }
 
-    return String(this.config.value.result ?? this.config.value.value)
+    return String(value)
   }
 
   // ============================================================================

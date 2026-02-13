@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { CardService } from '@/services/CardService'
-import type { SectionConfig } from '@/types'
+import { CellHelper } from '@/services/CellHelper'
+import type { SectionConfig, CardStyleConfig } from '@/types'
 import type { Cell } from 'exceljs'
 
 function makeCell(value: any): Cell {
@@ -16,7 +17,6 @@ describe('CardService', () => {
       [makeCell('Product C'), makeCell(150), makeCell(8)],
     ],
   }
-
 
   describe('createCardRecap', () => {
     it('should create card recap from data cell', () => {
@@ -53,21 +53,54 @@ describe('CardService', () => {
     })
   })
 
-  describe('formatCardValue', () => {
-    it('should format null as dash', () => {
-      expect(CardService.formatCardValue(null)).toBe('-')
-      expect(CardService.formatCardValue(undefined)).toBe('-')
+  describe('updateCardStyle', () => {
+    it('should update card style', () => {
+      const card = CardService.createCardRecap(mockSection, 0, 1)
+      const updated = CardService.updateCardStyle(card, {
+        valueFormat: { type: 'percentage' }
+      })
+      
+      expect(updated.style.valueFormat.type).toBe('percentage')
+    })
+  })
+
+  describe('setCardStyle', () => {
+    it('should set full card style', () => {
+      const card = CardService.createCardRecap(mockSection, 0, 1)
+      const newStyle: CardStyleConfig = {
+        valueFormat: { type: 'currency', customUnit: '$' },
+        size: 'large',
+        colorTheme: 'blue',
+        iconPosition: 'left',
+        typography: {
+          titleSize: 'medium',
+          valueSize: 'large'
+        }
+      }
+      const updated = CardService.setCardStyle(card, newStyle)
+      
+      expect(updated.style).toEqual(newStyle)
+    })
+  })
+})
+
+// Test CellHelper separately (moved from CardService)
+describe('CellHelper (formerly CardService helpers)', () => {
+  describe('formatAsString', () => {
+    it('should format null as empty string', () => {
+      expect(CellHelper.formatAsString(makeCell(null))).toBe('')
+      expect(CellHelper.formatAsString(makeCell(undefined))).toBe('')
     })
 
     it('should format numbers with French locale', () => {
-      const formatted = CardService.formatCardValue(1234.56)
+      const formatted = CellHelper.formatAsString(makeCell(1234.56))
       expect(formatted).toContain('1')
       expect(formatted).toContain('234')
     })
 
     it('should format dates', () => {
       const date = new Date('2024-01-15')
-      const formatted = CardService.formatCardValue(date)
+      const formatted = CellHelper.formatAsString(makeCell(date))
       
       expect(formatted).toContain('2024')
       expect(formatted).toContain('01')
@@ -75,56 +108,61 @@ describe('CardService', () => {
     })
 
     it('should format booleans', () => {
-      expect(CardService.formatCardValue(true)).toBe('Yes')
-      expect(CardService.formatCardValue(false)).toBe('No')
+      expect(CellHelper.formatAsString(makeCell(true))).toBe('Oui')
+      expect(CellHelper.formatAsString(makeCell(false))).toBe('Non')
     })
 
     it('should convert other types to string', () => {
-      expect(CardService.formatCardValue('Hello')).toBe('Hello')
-      expect(CardService.formatCardValue(123)).toContain('123')
+      expect(CellHelper.formatAsString(makeCell('Hello'))).toBe('Hello')
+      const formatted = CellHelper.formatAsString(makeCell(123))
+      expect(formatted).toContain('123')
     })
   })
 
-  describe('isNumericValue', () => {
+  describe('isNumeric', () => {
     it('should return true for numbers', () => {
-      expect(CardService.isNumericValue(123)).toBe(true)
-      expect(CardService.isNumericValue(0)).toBe(true)
-      expect(CardService.isNumericValue(-45.67)).toBe(true)
+      expect(CellHelper.isNumeric(makeCell(123))).toBe(true)
+      expect(CellHelper.isNumeric(makeCell(0))).toBe(true)
+      expect(CellHelper.isNumeric(makeCell(-45.67))).toBe(true)
     })
 
     it('should return false for non-numbers', () => {
-      expect(CardService.isNumericValue('123')).toBe(false)
-      expect(CardService.isNumericValue(null)).toBe(false)
-      expect(CardService.isNumericValue(undefined)).toBe(false)
-      expect(CardService.isNumericValue(true)).toBe(false)
+      expect(CellHelper.isNumeric(makeCell('123'))).toBe(false)
+      expect(CellHelper.isNumeric(makeCell(null))).toBe(false)
+      expect(CellHelper.isNumeric(makeCell(undefined))).toBe(false)
+      expect(CellHelper.isNumeric(makeCell(true))).toBe(false)
     })
   })
 
-  describe('getValueType', () => {
+  describe('getValueType via isEmpty/isNumeric/isBoolean/isDate', () => {
     it('should identify empty values', () => {
-      expect(CardService.getValueType(null)).toBe('empty')
-      expect(CardService.getValueType(undefined)).toBe('empty')
-      expect(CardService.getValueType('')).toBe('empty')
+      expect(CellHelper.isEmpty(makeCell(null))).toBe(true)
+      expect(CellHelper.isEmpty(makeCell(undefined))).toBe(true)
+      expect(CellHelper.isEmpty(makeCell(''))).toBe(true)
     })
 
     it('should identify numbers', () => {
-      expect(CardService.getValueType(123)).toBe('number')
-      expect(CardService.getValueType(0)).toBe('number')
-      expect(CardService.getValueType(-45.67)).toBe('number')
+      expect(CellHelper.isNumeric(makeCell(123))).toBe(true)
+      expect(CellHelper.isNumeric(makeCell(0))).toBe(true)
+      expect(CellHelper.isNumeric(makeCell(-45.67))).toBe(true)
     })
 
     it('should identify booleans', () => {
-      expect(CardService.getValueType(true)).toBe('boolean')
-      expect(CardService.getValueType(false)).toBe('boolean')
+      expect(CellHelper.isBoolean(makeCell(true))).toBe(true)
+      expect(CellHelper.isBoolean(makeCell(false))).toBe(true)
     })
 
     it('should identify dates', () => {
-      expect(CardService.getValueType(new Date())).toBe('date')
+      expect(CellHelper.isDate(makeCell(new Date()))).toBe(true)
     })
 
-    it('should identify text', () => {
-      expect(CardService.getValueType('hello')).toBe('text')
-      expect(CardService.getValueType('123')).toBe('text')
+    it('should identify text by exclusion', () => {
+      const textCell = makeCell('hello')
+      expect(CellHelper.isEmpty(textCell)).toBe(false)
+      expect(CellHelper.isNumeric(textCell)).toBe(false)
+      expect(CellHelper.isBoolean(textCell)).toBe(false)
+      expect(CellHelper.isDate(textCell)).toBe(false)
+      // If none of the above, it's text
     })
   })
 })

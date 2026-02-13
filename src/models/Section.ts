@@ -13,6 +13,7 @@ import { DEFAULT_SECTION_STYLE } from '@/types/models/section'
 import { Chart } from './Chart'
 import { CardRecap } from './CardRecap'
 import type { Cell } from 'exceljs'
+import { CellHelper } from '@/services/CellHelper'
 
 /**
  * Section Model
@@ -177,7 +178,7 @@ export class Section {
   }
 
   // ============================================================================
-  // Query methods
+  // Query methods - REFACTORED with CellHelper
   // ============================================================================
 
   getMetadata(): SectionMetadata {
@@ -194,21 +195,37 @@ export class Section {
   }
 
   getColumnInfo(columnIndex: ColumnIndex): ColumnInfo {
-    const label = String(this.config.header[columnIndex]?.value || `Col ${columnIndex + 1}`)
-    const values = this.config.data.map(row => row[columnIndex])
-    const isNumeric = values.every(v => typeof v?.value === 'number' || v?.value == null)
-    const isEmpty = values.every(v => v?.value == null || v?.value === '')
+    const headerCell = this.config.header[columnIndex] as Cell
+    const label = String(CellHelper.getDisplayValue(headerCell) || `Col ${columnIndex + 1}`)
+    
+    const values = this.config.data.map(row => row[columnIndex] as Cell)
+    
+    // Use CellHelper for type detection
+    const isNumeric = values.every(cell => 
+      CellHelper.isEmpty(cell) || CellHelper.isNumeric(cell)
+    )
+    const isEmpty = values.every(cell => CellHelper.isEmpty(cell))
 
     let type: ColumnInfo['type'] = 'mixed'
     if (isEmpty) {
       type = 'empty'
     } else if (isNumeric) {
       type = 'number'
-    } else if (values.every(v => typeof v?.value === 'string' || v?.value == null)) {
+    } else if (values.every(cell => {
+      if (CellHelper.isEmpty(cell)) return true
+      const val = CellHelper.getDisplayValue(cell)
+      return typeof val === 'string'
+    })) {
       type = 'text'
-    } else if (values.every(v => v?.value instanceof Date || v?.value == null)) {
+    } else if (values.every(cell => {
+      if (CellHelper.isEmpty(cell)) return true
+      return CellHelper.isDate(cell)
+    })) {
       type = 'date'
-    } else if (values.every(v => typeof v?.value === 'boolean' || v?.value == null)) {
+    } else if (values.every(cell => {
+      if (CellHelper.isEmpty(cell)) return true
+      return CellHelper.isBoolean(cell)
+    })) {
       type = 'boolean'
     }
 
@@ -252,7 +269,7 @@ export class Section {
   }
 
   // ============================================================================
-  // Filtering
+  // Filtering - REFACTORED with CellHelper
   // ============================================================================
 
   getFilteredData(): DataMatrix {
@@ -263,8 +280,9 @@ export class Section {
     const search = this.config.searchText.toLowerCase()
     return this.config.data.filter(row => 
       row.some(cell => {
-        if (cell.value == null) return false
-        return String(cell.value).toLowerCase().includes(search)
+        const displayValue = CellHelper.getDisplayValue(cell as Cell)
+        if (displayValue == null) return false
+        return String(displayValue).toLowerCase().includes(search)
       })
     )
   }

@@ -5,6 +5,7 @@ import type {
   SortConfig,
 } from '@/types'
 import type { Cell } from 'exceljs'
+import { CellHelper } from './CellHelper'
 
 /**
  * FilterService
@@ -12,7 +13,7 @@ import type { Cell } from 'exceljs'
  */
 export class FilterService {
   /**
-   * Check if a row matches search text
+   * Check if a row matches search text - REFACTORED with CellHelper
    */
   static matchesSearchText(row: RowData, searchText: string): boolean {
     if (!searchText.trim()) return true
@@ -20,9 +21,10 @@ export class FilterService {
     const search = searchText.toLowerCase()
     
     return row.some(cell => {
-      if (cell === null || cell === undefined) return false
+      const displayValue = CellHelper.getDisplayValue(cell as Cell)
+      if (displayValue === null || displayValue === undefined) return false
       
-      return String(cell.value).toLowerCase().includes(search)
+      return String(displayValue).toLowerCase().includes(search)
     })
   }
 
@@ -38,14 +40,13 @@ export class FilterService {
   }
 
   /**
-   * Compare two values for sorting
+   * Compare two values for sorting - REFACTORED with CellHelper
    */
-  // services/FilterService.ts
   private static compareValues(a: Cell, b: Cell, direction: 'asc' | 'desc'): number {
-    let valueA = a.result ?? a.value ?? null
-    let valueB = b.result ?? b.value ?? null
+    const valueA = CellHelper.getDisplayValue(a)
+    const valueB = CellHelper.getDisplayValue(b)
     
-    // Handle null/undefined
+    // Handle null/undefined - always push to end
     if (valueA === null || valueA === undefined) return 1
     if (valueB === null || valueB === undefined) return -1
 
@@ -81,7 +82,7 @@ export class FilterService {
     return [...data].sort((rowA, rowB) => {
       const valueA = rowA[columnIndex]!
       const valueB = rowB[columnIndex]!
-      return this.compareValues(valueA, valueB, direction)
+      return this.compareValues(valueA as Cell, valueB as Cell, direction)
     })
   }
 
