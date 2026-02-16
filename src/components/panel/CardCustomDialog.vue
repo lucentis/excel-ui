@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { excelStore, updateCardStyle } from '@/stores/excelStore'
 import { CardRecap } from '@/models'
 import type { CardStyleConfig } from '@/types'
@@ -60,21 +60,26 @@ const customUnit = ref(cardRecap.value?.style.valueFormat.customUnit || '€')
 
 const currentTheme = computed(() => getColorTheme(selectedTheme.value))
 
+// Preview value that updates when customUnit changes
 const previewValue = computed(() => {
   if (!cardRecap.value) return '1,234'
   
-  const value = cardRecap.value.value
-  if (typeof value.value !== 'number') return String(value)
+  // cardRecap.value is already a Cell, extract display value
+  const cellValue = cardRecap.value.value
+  const displayValue = (cellValue as any)?.result ?? (cellValue as any)?.value ?? cellValue
+  
+  if (typeof displayValue !== 'number') return String(displayValue)
 
   switch (valueFormat.value) {
     case 'integer':
-      return Math.round(value.value).toLocaleString('fr-FR')
+      return Math.round(displayValue).toLocaleString('fr-FR')
     case 'percentage':
-      return `${value.value.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}%`
+      return `${displayValue.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}%`
     case 'currency':
-      return `${value.value.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} ${customUnit.value}`
+      // Use reactive customUnit here - symbol AFTER number
+      return `${displayValue.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} ${customUnit.value}`
     default:
-      return value.value.toLocaleString('fr-FR', { maximumFractionDigits: 2 })
+      return displayValue.toLocaleString('fr-FR', { maximumFractionDigits: 2 })
   }
 })
 
@@ -100,8 +105,6 @@ function handleApply() {
   }
 
   updateCardStyle(props.sectionIndex, newStyle)
-  console.log('New style:', newStyle);
-  
   emit('close')
 }
 </script>
@@ -154,6 +157,7 @@ function handleApply() {
                     :variant="cardSize === size ? 'default' : 'outline'"
                     size="sm"
                     class="capitalize"
+                    :class="cardSize === size ? 'bg-blue-600 hover:bg-blue-700' : ''"
                   >
                     {{ size }}
                   </Button>
@@ -171,6 +175,7 @@ function handleApply() {
                     :variant="iconPosition === position ? 'default' : 'outline'"
                     size="sm"
                     class="capitalize"
+                    :class="iconPosition === position ? 'bg-blue-600 hover:bg-blue-700' : ''"
                   >
                     {{ position }}
                   </Button>
@@ -194,6 +199,7 @@ function handleApply() {
                     :variant="titleSize === size ? 'default' : 'outline'"
                     size="sm"
                     class="uppercase text-xs"
+                    :class="titleSize === size ? 'bg-blue-600 hover:bg-blue-700' : ''"
                   >
                     {{ size.charAt(0) }}
                   </Button>
@@ -211,6 +217,7 @@ function handleApply() {
                     :variant="valueSize === size ? 'default' : 'outline'"
                     size="sm"
                     class="uppercase text-xs"
+                    :class="valueSize === size ? 'bg-blue-600 hover:bg-blue-700' : ''"
                   >
                     {{ size === 'xlarge' ? 'XL' : size.charAt(0) }}
                   </Button>
@@ -229,14 +236,21 @@ function handleApply() {
                 @click="valueFormat = format.id"
                 :variant="valueFormat === format.id ? 'default' : 'outline'"
                 size="sm"
+                :class="valueFormat === format.id ? 'bg-blue-600 hover:bg-blue-700' : ''"
               >
                 {{ format.label }}
               </Button>
             </div>
 
-            <div v-if="valueFormat === 'currency'" class="pt-2">
-              <Label for="unit" class="text-xs text-gray-600">Custom Unit</Label>
-              <Input id="unit" v-model="customUnit" placeholder="€" class="mt-1 max-w-[200px]" />
+            <div v-if="valueFormat === 'currency'" class="pt-2 space-y-2">
+              <Label for="unit" class="text-xs text-gray-600">Currency Symbol</Label>
+              <Input 
+                id="unit" 
+                v-model="customUnit" 
+                placeholder="$" 
+                class="mt-1 max-w-[200px]"
+              />
+              <p class="text-xs text-gray-500">Preview updates in real-time below</p>
             </div>
           </div>
 
@@ -278,7 +292,7 @@ function handleApply() {
 
         <DialogFooter>
           <Button variant="outline" @click="handleClose">Cancel</Button>
-          <Button @click="handleApply">Apply</Button>
+          <Button @click="handleApply" class="bg-blue-600 hover:bg-blue-700">Apply</Button>
         </DialogFooter>
       </div>
     </DialogContent>
