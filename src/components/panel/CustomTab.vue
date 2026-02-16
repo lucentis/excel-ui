@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import CardCustomDialog from './CardCustomDialog.vue'
 import SectionCustomDialog from './SectionCustomDialog.vue'
+import { THEME_COLORS } from '@/lib/theme'
+import { cn } from '@/lib/utils'
 
 const selectedCardIndex = ref<number | null>(null)
 const selectedSectionIndex = ref<number | null>(null)
@@ -42,13 +44,13 @@ function closeSectionDialog() {
   <div class="flex-1 p-4 space-y-6 overflow-y-auto">
     <!-- Section Document -->
     <div class="space-y-3">
-      <h4 class="font-medium text-sm flex items-center gap-2">
-        <ChevronRight class="w-4 h-4" />
+      <h4 :class="cn('font-medium text-sm flex items-center gap-2', THEME_COLORS.customTab.sectionTitle)">
+        <ChevronRight :class="cn('w-4 h-4', THEME_COLORS.customTab.icon)" />
         Document
       </h4>
 
       <!-- Preview du titre -->
-      <div class="p-2 bg-blue-50 rounded text-sm font-medium text-blue-900">
+      <div :class="cn('p-2 rounded text-sm font-medium', THEME_COLORS.customTab.documentPreview)">
         {{ excelStore.currentSheet.title }}
       </div>
     </div>
@@ -57,8 +59,8 @@ function closeSectionDialog() {
 
     <!-- Section Cards Recap -->
     <div class="space-y-3">
-      <h4 class="font-medium text-sm flex items-center gap-2">
-        <Settings2 class="w-4 h-4" />
+      <h4 :class="cn('font-medium text-sm flex items-center gap-2', THEME_COLORS.customTab.sectionTitle)">
+        <Settings2 :class="cn('w-4 h-4', THEME_COLORS.customTab.icon)" />
         Cards Recap
       </h4>
 
@@ -68,30 +70,28 @@ function closeSectionDialog() {
         class="space-y-2 mt-3"
       >
         <div
-          v-for="(section, index) in excelStore.currentSheet.sections.filter(s => s.cardRecap)"
+          v-for="(section, index) in excelStore.currentSheet.sections.filter((s) => s.cardRecap)"
           :key="index"
-          class="p-3 border rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
           @click="openCardDialog(index)"
+          :class="cn('p-3 rounded-lg border cursor-pointer transition-colors', THEME_COLORS.customTab.iconHover)"
         >
           <div class="flex items-center justify-between">
             <div class="flex-1">
-              <div class="text-xs font-medium text-gray-700 mb-1">
+              <div :class="cn('font-medium text-sm', THEME_COLORS.customTab.sectionTitle)">
                 {{ section.title || `Section ${index + 1}` }}
               </div>
-              <div v-if="section.cardRecap" class="text-xs text-gray-600">
-                <div>
-                  <strong>{{ section.cardRecap.label || 'Valeur' }} :</strong>
-                  {{ formatValue(section.cardRecap.value) }}
-                </div>
+              <div :class="cn('text-xs mt-1', THEME_COLORS.customTab.sectionSubtext)">
+                ⭐ Card value: {{ formatValue(section.cardRecap?.value) }}
               </div>
             </div>
-            <Settings2 class="w-4 h-4 text-gray-400" />
+            <Settings2 :class="cn('w-4 h-4', THEME_COLORS.customTab.icon)" />
           </div>
         </div>
       </div>
 
-      <div v-else class="text-xs text-gray-500 italic p-2 bg-gray-50 rounded">
-        No recap cards configured
+      <!-- Message si aucune card -->
+      <div v-else :class="cn('p-3 border rounded-lg text-sm', THEME_COLORS.customTab.warning)">
+        📌 No recap cards configured - Click on a cell to create one
       </div>
     </div>
 
@@ -99,34 +99,29 @@ function closeSectionDialog() {
 
     <!-- Section Sections -->
     <div class="space-y-3">
-      <h4 class="font-medium text-sm flex items-center gap-2">
-        <Layers class="w-4 h-4" />
+      <h4 :class="cn('font-medium text-sm flex items-center gap-2', THEME_COLORS.customTab.sectionTitle)">
+        <Layers :class="cn('w-4 h-4', THEME_COLORS.customTab.icon)" />
         Sections
       </h4>
 
       <!-- Liste des sections -->
-      <div v-if="excelStore.currentSheet.sections.length > 0" class="space-y-3 mt-4">
-        <div class="flex items-center gap-2 text-sm text-gray-600">
-          <CheckCircle2 class="w-4 h-4 text-green-600" />
-          <span>{{ excelStore.currentSheet.sections.length }} section(s) detected</span>
-        </div>
-
+      <div v-if="excelStore.currentSheet.sections.length > 0" class="space-y-2">
         <div
           v-for="(section, index) in excelStore.currentSheet.sections"
           :key="index"
-          class="p-3 border rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
           @click="openSectionDialog(index)"
+          :class="cn('p-3 rounded-lg border cursor-pointer transition-colors', THEME_COLORS.customTab.iconHover)"
         >
-          <div class="flex items-start justify-between">
+          <div class="flex items-center justify-between">
             <div class="flex-1">
-              <div class="font-medium text-sm">
+              <div :class="cn('font-medium text-sm', THEME_COLORS.customTab.sectionTitle)">
                 {{ section.title || `Section ${index + 1}` }}
               </div>
-              <div class="text-xs text-gray-500 mt-1">
+              <div :class="cn('text-xs mt-1', THEME_COLORS.customTab.sectionSubtext)">
                 {{ section.data.length }} row(s) • {{ section.header.length }} column(s)
               </div>
             </div>
-            <Settings2 class="w-4 h-4 text-gray-400" />
+            <Settings2 :class="cn('w-4 h-4', THEME_COLORS.customTab.icon)" />
           </div>
 
           <!-- Preview des en-têtes -->
@@ -149,10 +144,7 @@ function closeSectionDialog() {
       </div>
 
       <!-- Message si aucune section -->
-      <div
-        v-else
-        class="p-3 border border-orange-200 rounded-lg bg-orange-50 text-sm text-orange-800"
-      >
+      <div v-else :class="cn('p-3 border rounded-lg text-sm', THEME_COLORS.customTab.warning)">
         ⚠️ No sections detected
       </div>
     </div>
@@ -160,7 +152,7 @@ function closeSectionDialog() {
     <Separator />
 
     <!-- Stats -->
-    <div class="space-y-2 text-xs text-gray-600">
+    <div :class="cn('space-y-2 text-xs', THEME_COLORS.customTab.sectionSubtext)">
       <div class="flex justify-between">
         <span>Total rows:</span>
         <span class="font-medium">{{ excelStore.currentSheet.rawData.length }}</span>
