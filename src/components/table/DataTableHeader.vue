@@ -6,6 +6,7 @@ import type { RowData, SortConfig } from '@/types'
 import type { SectionColorThemeDefinition } from '@/lib/sectionTheme'
 import type { Cell } from 'exceljs'
 import { excelStore } from '@/stores/excelStore'
+import { DATA_TABLE } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 
 const props = defineProps<{
@@ -34,25 +35,29 @@ function getSortIcon(colIndex: number, sortConfig?: SortConfig) {
 }
 
 function handleDoubleClick(header: Cell): void {
-  if (!excelStore.currentSheet.editionMode) return 
-
+  if (!excelStore.currentSheet.editionMode) return
   excelStore.currentSheet.currentCell = header
-
-  console.log('double click on header', header);
-  
+  console.log('double click on header', header)
 }
 </script>
 
 <template>
   <TableRow>
-    <TableHead class="w-12 sticky left-0 z-10 border-r" :class="[colorTheme?.text, colorTheme?.border]">#</TableHead>
+    <TableHead
+      class="w-12 sticky left-0 z-10 border-r"
+      :class="[colorTheme?.text, colorTheme?.border]"
+    >
+      #
+    </TableHead>
+
     <TableHead
       v-for="(header, index) in headers"
       :key="index"
       :class="[
-        'min-w-[150px] cursor-pointer hover:bg-gray-100',
+        'min-w-[150px] cursor-pointer',
+        DATA_TABLE.headerHover,
         selectedCell?.row === 0 && selectedCell?.col === index && !hasDataRows
-          ? 'bg-blue-100'
+          ? DATA_TABLE.selected
           : '',
         colorTheme?.text,
       ]"
@@ -60,13 +65,13 @@ function handleDoubleClick(header: Cell): void {
       @click="emit('headerClick', index)"
     >
       <div class="flex items-center gap-4 group">
-        <div 
+        <div
           class="flex items-center gap-1 flex-1"
           @click="props.hasDataRows && !excelStore.currentSheet.editionMode ? emit('sortClick', index) : null"
         >
           {{ formatCellValue(header) || `Col ${index + 1}` }}
-          
-          <component 
+
+          <component
             :is="getSortIcon(index, sortConfig)"
             v-if="getSortIcon(index, sortConfig)"
             :class="cn('w-4 h-4', colorTheme?.text)"
@@ -75,18 +80,17 @@ function handleDoubleClick(header: Cell): void {
 
         <Badge
           v-if="selectedCell?.row === 0 && selectedCell?.col === index && !hasDataRows"
-          class="text-xs bg-sky-100"
+          :class="cn('text-xs', DATA_TABLE.selectedBadge)"
         >
           ⭐
         </Badge>
 
-        <!-- Chart icon on hover for numeric columns -->
         <button
           v-if="numericColumns.includes(index)"
           @click.stop="emit('chartIconClick', index)"
-          class="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100 cursor-pointer"
+          :class="cn('opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded cursor-pointer', DATA_TABLE.iconBg)"
         >
-          <BarChart3 class="w-4 h-4" />
+          <BarChart3 :class="cn('w-4 h-4', DATA_TABLE.chartBarIcon)" />
         </button>
       </div>
     </TableHead>
