@@ -26,7 +26,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { THEME_COLORS } from '@/lib/theme'
+import { PANEL_CUSTOM } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 
 const props = defineProps<{
@@ -146,7 +146,7 @@ function handleApply() {
             <div class="grid grid-cols-2 gap-4">
               <!-- Size -->
               <div class="space-y-2">
-                <Label :class="cn('text-xs', THEME_COLORS.dialog.label)">Size</Label>
+                <Label :class="cn('text-xs', PANEL_CUSTOM.label)">Size</Label>
                 <div class="flex gap-2">
                   <Button
                     v-for="size in CARD_SIZE_OPTIONS"
@@ -155,7 +155,7 @@ function handleApply() {
                     :variant="cardSize === size ? 'default' : 'outline'"
                     size="sm"
                     class="capitalize"
-                    :class="cardSize === size ? THEME_COLORS.dialog.buttonSelected : ''"
+                    :class="cardSize === size ? PANEL_CUSTOM.buttonSelected : ''"
                   >
                     {{ size }}
                   </Button>
@@ -164,7 +164,7 @@ function handleApply() {
 
               <!-- Icon Position -->
               <div class="space-y-2">
-                <Label :class="cn('text-xs', THEME_COLORS.dialog.label)">Icon Position</Label>
+                <Label :class="cn('text-xs', PANEL_CUSTOM.label)">Icon Position</Label>
                 <div class="flex gap-2">
                   <Button
                     v-for="position in CARD_ICON_POSITION_OPTIONS"
@@ -173,7 +173,7 @@ function handleApply() {
                     :variant="iconPosition === position ? 'default' : 'outline'"
                     size="sm"
                     class="capitalize"
-                    :class="iconPosition === position ? THEME_COLORS.dialog.buttonSelected : ''"
+                    :class="iconPosition === position ? PANEL_CUSTOM.buttonSelected : ''"
                   >
                     {{ position }}
                   </Button>
@@ -188,7 +188,7 @@ function handleApply() {
             <div class="grid grid-cols-2 gap-4">
               <!-- Title Size -->
               <div class="space-y-2">
-                <Label :class="cn('text-xs', THEME_COLORS.dialog.label)">Title Size</Label>
+                <Label :class="cn('text-xs', PANEL_CUSTOM.label)">Title Size</Label>
                 <div class="flex gap-2">
                   <Button
                     v-for="size in CARD_TITLE_SIZE_OPTIONS"
@@ -197,7 +197,7 @@ function handleApply() {
                     :variant="titleSize === size ? 'default' : 'outline'"
                     size="sm"
                     class="uppercase text-xs"
-                    :class="titleSize === size ? THEME_COLORS.dialog.buttonSelected : ''"
+                    :class="titleSize === size ? PANEL_CUSTOM.buttonSelected : ''"
                   >
                     {{ size.charAt(0) }}
                   </Button>
@@ -206,7 +206,7 @@ function handleApply() {
 
               <!-- Value Size -->
               <div class="space-y-2">
-                <Label :class="cn('text-xs', THEME_COLORS.dialog.label)">Value Size</Label>
+                <Label :class="cn('text-xs', PANEL_CUSTOM.label)">Value Size</Label>
                 <div class="flex gap-2">
                   <Button
                     v-for="size in CARD_VALUE_SIZE_OPTIONS"
@@ -215,7 +215,7 @@ function handleApply() {
                     :variant="valueSize === size ? 'default' : 'outline'"
                     size="sm"
                     class="uppercase text-xs"
-                    :class="valueSize === size ? THEME_COLORS.dialog.buttonSelected : ''"
+                    :class="valueSize === size ? PANEL_CUSTOM.buttonSelected : ''"
                   >
                     {{ size === 'xlarge' ? 'XL' : size.charAt(0) }}
                   </Button>
@@ -234,21 +234,21 @@ function handleApply() {
                 @click="valueFormat = format.id"
                 :variant="valueFormat === format.id ? 'default' : 'outline'"
                 size="sm"
-                :class="valueFormat === format.id ? THEME_COLORS.dialog.buttonSelected : ''"
+                :class="valueFormat === format.id ? PANEL_CUSTOM.buttonSelected : ''"
               >
                 {{ format.label }}
               </Button>
             </div>
 
             <div v-if="valueFormat === 'currency'" class="pt-2 space-y-2">
-              <Label for="unit" :class="cn('text-xs', THEME_COLORS.dialog.label)">Currency Symbol</Label>
+              <Label for="unit" :class="cn('text-xs', PANEL_CUSTOM.label)">Currency Symbol</Label>
               <Input 
                 id="unit" 
                 v-model="customUnit" 
                 placeholder="$" 
                 class="mt-1 max-w-[200px]"
               />
-              <p :class="cn('text-xs', THEME_COLORS.dialog.helper)">Preview updates in real-time below</p>
+              <p :class="cn('text-xs', PANEL_CUSTOM.subtitle)">Preview updates in real-time below</p>
             </div>
           </div>
 
@@ -290,7 +290,7 @@ function handleApply() {
 
         <DialogFooter>
           <Button variant="outline" @click="handleClose">Cancel</Button>
-          <Button @click="handleApply" :class="THEME_COLORS.dialog.buttonSelected">Apply</Button>
+          <Button @click="handleApply" :class="PANEL_CUSTOM.buttonSelected">Apply</Button>
         </DialogFooter>
       </div>
     </DialogContent>

@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { TableCell, TableRow } from '@/components/ui/table'
 import type { RowData } from '@/types'
 import { excelStore } from '@/stores/excelStore'
-import { THEME_COLORS } from '@/lib/theme'
+import { DATA_TABLE } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 import type { Cell } from 'exceljs'
 
@@ -51,18 +51,18 @@ function handleDoubleClick(cell: Cell): void {
           @click="emit('toggleExclusion')"
           :class="cn(
             'opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded',
-            THEME_COLORS.dataTable.iconBg,
+            DATA_TABLE.iconBg,
             isExcluded ? 'opacity-100' : ''
           )"
           :title="isExcluded ? 'Include in charts' : 'Exclude from charts'"
         >
           <EyeOff 
             v-if="isExcluded"
-            :class="cn('w-4 h-4', THEME_COLORS.dataTable.excluded)"
+            :class="cn('w-4 h-4', DATA_TABLE.excluded)"
           />
           <Eye 
             v-else
-            :class="cn('w-4 h-4', THEME_COLORS.dataTable.icon)"
+            :class="cn('w-4 h-4', DATA_TABLE.icon)"
           />
         </button>
       </div>
@@ -73,8 +73,8 @@ function handleDoubleClick(cell: Cell): void {
       :key="cellIndex"
       :class="cn(
         'cursor-pointer',
-        THEME_COLORS.dataTable.hover,
-        isCellSelected(cellIndex, selectedCell) ? THEME_COLORS.dataTable.selected : '',
+        DATA_TABLE.hover,
+        isCellSelected(cellIndex, selectedCell) ? DATA_TABLE.selected : '',
         isExcluded ? 'opacity-50' : ''
       )"
       @click="!excelStore.currentSheet.editionMode && emit('cellClick', cellIndex)"
@@ -86,13 +86,13 @@ function handleDoubleClick(cell: Cell): void {
         <!-- Badge pour l'adresse Excel -->
         <Badge
           v-if="excelStore.currentSheet.currentCell?.formula"
-          :class="cn('absolute top-0 right-0 text-[0.6em]', THEME_COLORS.dataTable.addressBadge)"
+          :class="cn('absolute top-0 right-0 text-[0.6em]', DATA_TABLE.addressBadge)"
         >
           {{ cell.address }}
         </Badge>
         <Badge
           v-if="isCellSelected(cellIndex, selectedCell)"
-          :class="cn('text-xs', THEME_COLORS.dataTable.selectedBadge)"
+          :class="cn('text-xs', DATA_TABLE.selectedBadge)"
         >
           ⭐
         </Badge>
