@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { excelStore, updateCardStyle } from '@/stores/excelStore'
 import { CardRecap } from '@/models'
 import type { CardStyleConfig } from '@/types'
@@ -26,6 +26,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { THEME_COLORS } from '@/lib/theme'
+import { cn } from '@/lib/utils'
 
 const props = defineProps<{
   sectionIndex: number
@@ -49,7 +51,6 @@ const cardTitle = computed(() => {
   return section.value?.title || `Section ${props.sectionIndex + 1}`
 })
 
-// Local state initialized from card config
 const selectedTheme = ref(cardRecap.value?.style.colorTheme || 'blue')
 const cardSize = ref(cardRecap.value?.style.size || 'medium')
 const iconPosition = ref(cardRecap.value?.style.iconPosition || 'left')
@@ -60,11 +61,9 @@ const customUnit = ref(cardRecap.value?.style.valueFormat.customUnit || '€')
 
 const currentTheme = computed(() => getColorTheme(selectedTheme.value))
 
-// Preview value that updates when customUnit changes
 const previewValue = computed(() => {
   if (!cardRecap.value) return '1,234'
   
-  // cardRecap.value is already a Cell, extract display value
   const cellValue = cardRecap.value.value
   const displayValue = (cellValue as any)?.result ?? (cellValue as any)?.value ?? cellValue
   
@@ -76,7 +75,6 @@ const previewValue = computed(() => {
     case 'percentage':
       return `${displayValue.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}%`
     case 'currency':
-      // Use reactive customUnit here - symbol AFTER number
       return `${displayValue.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} ${customUnit.value}`
     default:
       return displayValue.toLocaleString('fr-FR', { maximumFractionDigits: 2 })
@@ -148,7 +146,7 @@ function handleApply() {
             <div class="grid grid-cols-2 gap-4">
               <!-- Size -->
               <div class="space-y-2">
-                <Label class="text-xs text-gray-600">Size</Label>
+                <Label :class="cn('text-xs', THEME_COLORS.dialog.label)">Size</Label>
                 <div class="flex gap-2">
                   <Button
                     v-for="size in CARD_SIZE_OPTIONS"
@@ -157,7 +155,7 @@ function handleApply() {
                     :variant="cardSize === size ? 'default' : 'outline'"
                     size="sm"
                     class="capitalize"
-                    :class="cardSize === size ? 'bg-blue-600 hover:bg-blue-700' : ''"
+                    :class="cardSize === size ? THEME_COLORS.dialog.buttonSelected : ''"
                   >
                     {{ size }}
                   </Button>
@@ -166,7 +164,7 @@ function handleApply() {
 
               <!-- Icon Position -->
               <div class="space-y-2">
-                <Label class="text-xs text-gray-600">Icon Position</Label>
+                <Label :class="cn('text-xs', THEME_COLORS.dialog.label)">Icon Position</Label>
                 <div class="flex gap-2">
                   <Button
                     v-for="position in CARD_ICON_POSITION_OPTIONS"
@@ -175,7 +173,7 @@ function handleApply() {
                     :variant="iconPosition === position ? 'default' : 'outline'"
                     size="sm"
                     class="capitalize"
-                    :class="iconPosition === position ? 'bg-blue-600 hover:bg-blue-700' : ''"
+                    :class="iconPosition === position ? THEME_COLORS.dialog.buttonSelected : ''"
                   >
                     {{ position }}
                   </Button>
@@ -190,7 +188,7 @@ function handleApply() {
             <div class="grid grid-cols-2 gap-4">
               <!-- Title Size -->
               <div class="space-y-2">
-                <Label class="text-xs text-gray-600">Title Size</Label>
+                <Label :class="cn('text-xs', THEME_COLORS.dialog.label)">Title Size</Label>
                 <div class="flex gap-2">
                   <Button
                     v-for="size in CARD_TITLE_SIZE_OPTIONS"
@@ -199,7 +197,7 @@ function handleApply() {
                     :variant="titleSize === size ? 'default' : 'outline'"
                     size="sm"
                     class="uppercase text-xs"
-                    :class="titleSize === size ? 'bg-blue-600 hover:bg-blue-700' : ''"
+                    :class="titleSize === size ? THEME_COLORS.dialog.buttonSelected : ''"
                   >
                     {{ size.charAt(0) }}
                   </Button>
@@ -208,7 +206,7 @@ function handleApply() {
 
               <!-- Value Size -->
               <div class="space-y-2">
-                <Label class="text-xs text-gray-600">Value Size</Label>
+                <Label :class="cn('text-xs', THEME_COLORS.dialog.label)">Value Size</Label>
                 <div class="flex gap-2">
                   <Button
                     v-for="size in CARD_VALUE_SIZE_OPTIONS"
@@ -217,7 +215,7 @@ function handleApply() {
                     :variant="valueSize === size ? 'default' : 'outline'"
                     size="sm"
                     class="uppercase text-xs"
-                    :class="valueSize === size ? 'bg-blue-600 hover:bg-blue-700' : ''"
+                    :class="valueSize === size ? THEME_COLORS.dialog.buttonSelected : ''"
                   >
                     {{ size === 'xlarge' ? 'XL' : size.charAt(0) }}
                   </Button>
@@ -236,21 +234,21 @@ function handleApply() {
                 @click="valueFormat = format.id"
                 :variant="valueFormat === format.id ? 'default' : 'outline'"
                 size="sm"
-                :class="valueFormat === format.id ? 'bg-blue-600 hover:bg-blue-700' : ''"
+                :class="valueFormat === format.id ? THEME_COLORS.dialog.buttonSelected : ''"
               >
                 {{ format.label }}
               </Button>
             </div>
 
             <div v-if="valueFormat === 'currency'" class="pt-2 space-y-2">
-              <Label for="unit" class="text-xs text-gray-600">Currency Symbol</Label>
+              <Label for="unit" :class="cn('text-xs', THEME_COLORS.dialog.label)">Currency Symbol</Label>
               <Input 
                 id="unit" 
                 v-model="customUnit" 
                 placeholder="$" 
                 class="mt-1 max-w-[200px]"
               />
-              <p class="text-xs text-gray-500">Preview updates in real-time below</p>
+              <p :class="cn('text-xs', THEME_COLORS.dialog.helper)">Preview updates in real-time below</p>
             </div>
           </div>
 
@@ -292,7 +290,7 @@ function handleApply() {
 
         <DialogFooter>
           <Button variant="outline" @click="handleClose">Cancel</Button>
-          <Button @click="handleApply" class="bg-blue-600 hover:bg-blue-700">Apply</Button>
+          <Button @click="handleApply" :class="THEME_COLORS.dialog.buttonSelected">Apply</Button>
         </DialogFooter>
       </div>
     </DialogContent>

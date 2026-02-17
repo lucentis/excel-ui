@@ -6,6 +6,7 @@ import type { RowData, SortConfig } from '@/types'
 import type { SectionColorThemeDefinition } from '@/lib/sectionTheme'
 import type { Cell } from 'exceljs'
 import { excelStore } from '@/stores/excelStore'
+import { cn } from '@/lib/utils'
 
 const props = defineProps<{
   headers: RowData
@@ -68,7 +69,7 @@ function handleDoubleClick(header: Cell): void {
           <component 
             :is="getSortIcon(index, sortConfig)"
             v-if="getSortIcon(index, sortConfig)"
-            class="w-4 h-4 text-blue-600"
+            :class="cn('w-4 h-4', colorTheme?.text)"
           />
         </div>
 

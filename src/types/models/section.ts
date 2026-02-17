@@ -73,7 +73,7 @@ export interface SectionStyleConfig {
  * Default section style configuration
  */
 export const DEFAULT_SECTION_STYLE: SectionStyleConfig = {
-  colorTheme: 'blue',
+  colorTheme: 'indigo',
   titleSize: 'xlarge',
   tableStyle: {
     showBorders: true,

@@ -19,14 +19,6 @@ const hasSections = computed(() => excelStore.currentSheet.sections.length > 0)
 function handleSheetChange(sheetName: string) {
   setCurrentSheet(sheetName)
 }
-
-function formatCellValue(value: unknown): string {
-  if (value === null || value === undefined) return ''
-  if (typeof value === 'number') return value.toLocaleString('fr-FR')
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
-  if (value instanceof Date) return value.toLocaleDateString('fr-FR')
-  return String(value)
-}
 </script>
 
 <template>
@@ -66,7 +58,7 @@ function formatCellValue(value: unknown): string {
                 :key="index"
                 class="min-w-[150px]"
               >
-                {{ formatCellValue(header) || `Column ${index + 1}` }}
+                {{ header || `Column ${index + 1}` }}
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -79,7 +71,7 @@ function formatCellValue(value: unknown): string {
                 {{ rowIndex + 2 }}
               </TableCell>
               <TableCell v-for="(cell, cellIndex) in row" :key="cellIndex">
-                {{ formatCellValue(cell) }}
+                {{ cell }}
               </TableCell>
             </TableRow>
           </TableBody>

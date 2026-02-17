@@ -57,11 +57,15 @@ export const THEME_COLORS = {
   
     // General UI elements
     ui: {
-      title: 'text-slate-900',
-      subtitle: 'text-slate-700',
+      title: 'text-slate-800',
+      subtitle: 'text-slate-600',
       body: 'text-slate-600',
       muted: 'text-slate-500',
       divider: 'border-slate-200',
+      accentIcon: 'text-indigo-600',
+      accentText: 'text-indigo-600',
+      accentBg: 'bg-indigo-500',
+      accentBgHover: 'hover:bg-indigo-500'
     },
   } as const
   

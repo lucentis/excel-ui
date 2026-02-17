@@ -8,6 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { cn } from '@/lib/utils';
+import THEME_COLORS from '@/lib/theme';
 
 defineProps<{
   title: string
@@ -24,14 +26,14 @@ const emit = defineEmits<{
 <template>
   <div class="flex items-center justify-between pb-4 border-b">
     <div class="flex items-center gap-3">
-      <FileText class="w-6 h-6 text-blue-600" />
+      <FileText :class="cn('w-6 h-6', THEME_COLORS.ui.accentIcon)" />
       <div>
-        <h2 class="text-2xl font-bold text-gray-900">{{ title }}</h2>
+        <h2 :class="cn('text-2xl font-bold', THEME_COLORS.ui.title)">{{ title }}</h2>
         <div class="flex items-center gap-2 mt-1">
-          <Badge variant="secondary" class="text-xs">
+          <Badge :class="cn('text-xs', THEME_COLORS.ui.accentBg)">
             {{ currentSheetName }}
           </Badge>
-          <span class="text-sm text-gray-500">
+          <span :class="cn('text-sm', THEME_COLORS.ui.muted)">
             {{ sectionCount }} section{{ sectionCount > 1 ? 's' : '' }}
           </span>
         </div>
@@ -52,6 +54,7 @@ const emit = defineEmits<{
           v-for="name in sheetNames"
           :key="name"
           :value="name"
+          :class="THEME_COLORS.ui.accentBgHover"
         >
           <div class="flex items-center gap-2">
             <Sheet class="w-4 h-4" />

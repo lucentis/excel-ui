@@ -3,8 +3,10 @@ import { Eye, EyeOff } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import { TableCell, TableRow } from '@/components/ui/table'
 import type { RowData } from '@/types'
-import { excelStore } from '@/stores/excelStore';
-import type { Cell } from 'exceljs';
+import { excelStore } from '@/stores/excelStore'
+import { THEME_COLORS } from '@/lib/theme'
+import { cn } from '@/lib/utils'
+import type { Cell } from 'exceljs'
 
 const props = defineProps<{
   row: RowData
@@ -27,11 +29,8 @@ function isCellSelected(colIndex: number, selectedCell?: { row: number; col: num
 
 function handleDoubleClick(cell: Cell): void {
   if (!excelStore.currentSheet.editionMode) return 
-
   excelStore.currentSheet.currentCell = cell
-
-  console.log('double click on cell', cell);
-  
+  console.log('double click on cell', cell)
 }
 </script>
 
@@ -50,19 +49,20 @@ function handleDoubleClick(cell: Cell): void {
         <button
           v-if="hasVisibleCharts"
           @click="emit('toggleExclusion')"
-          :class="[
-            'opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100',
+          :class="cn(
+            'opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded',
+            THEME_COLORS.dataTable.iconBg,
             isExcluded ? 'opacity-100' : ''
-          ]"
+          )"
           :title="isExcluded ? 'Include in charts' : 'Exclude from charts'"
         >
           <EyeOff 
             v-if="isExcluded"
-            class="w-4 h-4 text-orange-500"
+            :class="cn('w-4 h-4', THEME_COLORS.dataTable.excluded)"
           />
           <Eye 
             v-else
-            class="w-4 h-4 text-gray-400"
+            :class="cn('w-4 h-4', THEME_COLORS.dataTable.icon)"
           />
         </button>
       </div>
@@ -71,11 +71,12 @@ function handleDoubleClick(cell: Cell): void {
     <TableCell
       v-for="(cell, cellIndex) in row"
       :key="cellIndex"
-      :class="[
-        'cursor-pointer hover:bg-blue-50',
-        isCellSelected(cellIndex, selectedCell) ? 'bg-blue-100' : '',
-        isExcluded ? 'opacity-50' : '',
-      ]"
+      :class="cn(
+        'cursor-pointer',
+        THEME_COLORS.dataTable.hover,
+        isCellSelected(cellIndex, selectedCell) ? THEME_COLORS.dataTable.selected : '',
+        isExcluded ? 'opacity-50' : ''
+      )"
       @click="!excelStore.currentSheet.editionMode && emit('cellClick', cellIndex)"
       @dblclick="handleDoubleClick(cell)"
     >
@@ -85,13 +86,13 @@ function handleDoubleClick(cell: Cell): void {
         <!-- Badge pour l'adresse Excel -->
         <Badge
           v-if="excelStore.currentSheet.currentCell?.formula"
-          class="absolute top-0 right-0 text-[0.6em] bg-gray-100 text-gray-600"
+          :class="cn('absolute top-0 right-0 text-[0.6em]', THEME_COLORS.dataTable.addressBadge)"
         >
           {{ cell.address }}
         </Badge>
         <Badge
           v-if="isCellSelected(cellIndex, selectedCell)"
-          class="text-xs bg-sky-100"
+          :class="cn('text-xs', THEME_COLORS.dataTable.selectedBadge)"
         >
           ⭐
         </Badge>
